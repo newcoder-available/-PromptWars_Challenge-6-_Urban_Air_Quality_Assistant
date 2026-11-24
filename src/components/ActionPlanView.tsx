@@ -103,11 +103,11 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
         </button>
       </div>
 
-      <p style={{ marginTop: 0, color: 'var(--text-secondary)' }}>{plan.winterSmogBriefing}</p>
+      <p className="briefing-lead">{plan.winterSmogBriefing}</p>
 
       {plan.urgentAlerts.length > 0 && (
         <div className="alert-banner" role="alert">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 800 }}>
+          <div className="alert-banner-title">
             <AlertCircle size={17} aria-hidden="true" />
             Priority Air Advisories
           </div>
@@ -120,10 +120,9 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
       )}
 
       <div
-        className="chip-row no-print"
+        className="chip-row chip-row-spaced no-print"
         role="group"
         aria-label="Filter recommendations by category"
-        style={{ marginBottom: '1rem' }}
       >
         <button
           type="button"
@@ -165,13 +164,11 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
               </div>
 
               <div>
-                <h3 style={{ margin: '0 0 0.35rem', fontSize: '1.02rem' }}>{rec.title}</h3>
-                <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
-                  {rec.summary}
-                </p>
+                <h3 className="rec-title">{rec.title}</h3>
+                <p className="rec-summary">{rec.summary}</p>
               </div>
 
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              <div className="rec-timing">
                 <strong>Best timing:</strong> {rec.bestTimeWindow}
               </div>
 
@@ -184,13 +181,11 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
               <div className="impact-panel" aria-label={`Direct impact for ${rec.title}`}>
                 <div className="impact-kpis">
                   <span className="impact-kpi">
-                    <HeartPulse size={12} aria-hidden="true" style={{ verticalAlign: 'middle' }} />{' '}
-                    -{rec.impact.pm25ExposureReductionPct}% PM2.5 Exposure
+                    <HeartPulse size={12} aria-hidden="true" className="inline-icon-mid" /> -
+                    {rec.impact.pm25ExposureReductionPct}% PM2.5 Exposure
                   </span>
                   {rec.impact.weeklyCo2SavedKg > 0 && (
-                    <span className="impact-kpi">
-                      -{rec.impact.weeklyCo2SavedKg} kg CO₂/wk
-                    </span>
+                    <span className="impact-kpi">-{rec.impact.weeklyCo2SavedKg} kg CO₂/wk</span>
                   )}
                   {rec.impact.weeklyPm25AvoidedGrams > 0 && (
                     <span className="impact-kpi">
@@ -212,16 +207,12 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
       </div>
 
       <div className="community-brief-box">
-        <div className="card-header" style={{ marginBottom: '0.35rem' }}>
-          <h3 style={{ margin: 0, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+        <div className="card-header card-header-tight">
+          <h3 className="community-brief-heading">
             <Share2 size={16} aria-hidden="true" />
             Shareable Neighborhood / School Smog Alert
           </h3>
-          <button
-            type="button"
-            className="btn btn-sm no-print"
-            onClick={handleCopyTemplate}
-          >
+          <button type="button" className="btn btn-sm no-print" onClick={handleCopyTemplate}>
             {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
             {copied ? 'Copied!' : 'Copy Message'}
           </button>

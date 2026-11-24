@@ -28,7 +28,7 @@ const QUICK_PROMPTS = [
   'How do I build an affordable DIY air purifier for a winter bedroom?',
   'When should I open windows and how do I reduce gas stove indoor pollution?',
   'Draft a short winter smog alert & carpool message for my apartment WhatsApp group.',
-];
+] as const;
 
 export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps) {
   const [messages, setMessages] = useState<RichMessage[]>([
@@ -106,10 +106,9 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
       </div>
 
       <div
-        className="chip-row"
+        className="chip-row chip-row-spaced"
         role="group"
         aria-label="Suggested air quality questions"
-        style={{ marginBottom: '0.9rem' }}
       >
         {QUICK_PROMPTS.map((prompt) => (
           <button
@@ -133,17 +132,10 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
       >
         {messages.map((msg) => (
           <div key={msg.id} className={`chat-bubble ${msg.role}`}>
-            <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+            <div className="chat-text-pre">{msg.content}</div>
 
             {msg.keyTakeaways && msg.keyTakeaways.length > 0 && (
-              <ul
-                style={{
-                  margin: '0.6rem 0 0',
-                  paddingLeft: '1.15rem',
-                  fontSize: '0.84rem',
-                  color: 'var(--text-secondary)',
-                }}
-              >
+              <ul className="chat-takeaways">
                 {msg.keyTakeaways.map((tip) => (
                   <li key={tip}>{tip}</li>
                 ))}
@@ -151,19 +143,9 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
             )}
 
             {msg.impactHighlight && (
-              <div
-                style={{
-                  marginTop: '0.6rem',
-                  padding: '0.5rem 0.65rem',
-                  borderRadius: '6px',
-                  background: 'var(--brand-soft)',
-                  color: 'var(--brand)',
-                  fontSize: '0.82rem',
-                  fontWeight: 700,
-                }}
-              >
-                <Sparkles size={13} aria-hidden="true" style={{ verticalAlign: 'middle' }} />{' '}
-                Direct Impact: {msg.impactHighlight}
+              <div className="chat-impact-badge">
+                <Sparkles size={13} aria-hidden="true" className="inline-icon-mid" /> Direct
+                Impact: {msg.impactHighlight}
               </div>
             )}
           </div>
@@ -177,17 +159,17 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
       </div>
 
       {error && (
-        <div className="error-box" role="alert" style={{ marginTop: '0.75rem' }}>
+        <div className="error-box error-box-top" role="alert">
           {error}
         </div>
       )}
 
       <form
+        className="chat-form"
         onSubmit={(e) => {
           e.preventDefault();
-          submitQuestion(input);
+          void submitQuestion(input);
         }}
-        style={{ display: 'flex', gap: '0.6rem', marginTop: '0.85rem' }}
       >
         <label htmlFor="advisor-chat-input" className="sr-only">
           Ask AirShield AI a question about winter smog, indoor air quality, or low-emission habits
@@ -202,16 +184,20 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
           placeholder="Ask about safe play hours, DIY HEPA box fans, masks, carpooling, or school protocols..."
           disabled={sending}
         />
-        <button type="submit" className="btn btn-primary" disabled={sending || input.trim().length < 2}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={sending || input.trim().length < 2}
+        >
           <Send size={16} aria-hidden="true" />
           Send
         </button>
       </form>
 
       <p className="disclaimer-note">
-        <ShieldAlert size={13} aria-hidden="true" style={{ verticalAlign: 'text-bottom' }} />{' '}
-        Protected with server-side input sanitization and prompt-injection guardrails. Educational
-        guidance only — consult a clinician for acute respiratory distress.
+        <ShieldAlert size={13} aria-hidden="true" className="inline-icon" /> Protected with
+        server-side input sanitization and prompt-injection guardrails. Educational guidance only —
+        consult a clinician for acute respiratory distress.
       </p>
     </section>
   );

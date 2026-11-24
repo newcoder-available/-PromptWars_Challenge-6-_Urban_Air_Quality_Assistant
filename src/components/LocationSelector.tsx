@@ -7,15 +7,19 @@ import { searchCitiesApi } from '../lib/apiClient.js';
 interface LocationSelectorProps {
   selectedCity: CityLocation;
   onSelectCity: (city: CityLocation) => void;
+  onLocateMe: () => void;
 }
 
-export function LocationSelector({ selectedCity, onSelectCity }: LocationSelectorProps) {
+export function LocationSelector({
+  selectedCity,
+  onSelectCity,
+  onLocateMe,
+}: LocationSelectorProps) {
   const inputId = useId();
   const listboxId = useId();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<CityLocation[]>([]);
   const [searching, setSearching] = useState(false);
-  const [geoStatus, setGeoStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -41,30 +45,6 @@ export function LocationSelector({ selectedCity, onSelectCity }: LocationSelecto
       controller.abort();
     };
   }, [query]);
-
-  function handleUseMyLocation(): void {
-    if (!('geolocation' in navigator)) {
-      setGeoStatus('Geolocation is not supported in this browser.');
-      return;
-    }
-
-    setGeoStatus('Requesting location...');
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setGeoStatus(null);
-        onSelectCity({
-          name: 'My Current Location',
-          country: 'Local Coordinates',
-          latitude: Number(pos.coords.latitude.toFixed(4)),
-          longitude: Number(pos.coords.longitude.toFixed(4)),
-        });
-      },
-      () => {
-        setGeoStatus('Location permission denied — select a city below instead.');
-      },
-      { timeout: 6000, maximumAge: 300_000 },
-    );
-  }
 
   return (
     <section className="card location-bar" aria-label="Select city or location">
@@ -108,9 +88,7 @@ export function LocationSelector({ selectedCity, onSelectCity }: LocationSelecto
                       <strong>{city.name}</strong>
                       {city.admin1 ? `, ${city.admin1}` : ''}
                     </span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                      {city.country}
-                    </span>
+                    <span className="search-option-country">{city.country}</span>
                   </button>
                 </li>
               ))}
@@ -121,7 +99,7 @@ export function LocationSelector({ selectedCity, onSelectCity }: LocationSelecto
         <button
           type="button"
           className="btn"
-          onClick={handleUseMyLocation}
+          onClick={onLocateMe}
           aria-label="Use my current browser location"
         >
           <LocateFixed size={16} aria-hidden="true" />
@@ -134,16 +112,10 @@ export function LocationSelector({ selectedCity, onSelectCity }: LocationSelecto
           <Search size={13} aria-hidden="true" /> Searching cities...
         </p>
       )}
-      {geoStatus && (
-        <p className="card-subtitle" role="status" aria-live="polite">
-          {geoStatus}
-        </p>
-      )}
 
       <div className="chip-row" role="group" aria-label="Winter smog hotspot preset cities">
-        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-          <MapPin size={13} aria-hidden="true" style={{ verticalAlign: 'text-bottom' }} /> Quick
-          cities:
+        <span className="quick-cities-label">
+          <MapPin size={13} aria-hidden="true" className="inline-icon" /> Quick cities:
         </span>
         {PRESET_CITIES.map((city) => {
           const isSelected =

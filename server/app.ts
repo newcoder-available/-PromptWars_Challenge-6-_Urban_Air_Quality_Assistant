@@ -5,6 +5,7 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { errorHandler } from './middleware/errorHandler.js';
+import { requestIdMiddleware } from './middleware/requestId.js';
 import { createApiRouter, type ApiRouterOptions } from './routes/api.js';
 
 export interface AppConfig {
@@ -42,9 +43,10 @@ function resolveAllowedOrigins(override?: string[]): Set<string> {
 export function createApp(config: AppConfig = {}): Express {
   const app = express();
 
-  // Hide Express fingerprint
+  // Hide Express fingerprint & attach correlation ID
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
+  app.use(requestIdMiddleware);
 
   // Strict security headers including Content-Security-Policy
   app.use(

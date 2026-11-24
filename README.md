@@ -9,7 +9,7 @@
 [![Express 5](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Security](https://img.shields.io/badge/Security-Helmet%20CSP%20%2B%20Zod%20%2B%20RateLimit-0b6e4f)](./SECURITY.md)
 [![Accessibility](https://img.shields.io/badge/WCAG%202.1-AA%20Accessible-0369a1)](#accessibility--inclusive-design)
-[![Tests](https://img.shields.io/badge/Vitest-19%2F19%20Passing-16a34a)](#testing--verification)
+[![Tests](https://img.shields.io/badge/Vitest-28%2F28%20Passing-16a34a)](#testing--verification)
 
 </div>
 
@@ -157,7 +157,7 @@ docker run -p 8080:8080 \
 ```bash
 npm run typecheck   # Strict TypeScript checks (client + server + shared)
 npm run lint        # ESLint + typescript-eslint + react-hooks + jsx-a11y
-npm test            # 19 automated Vitest tests (domain, security, rate-limit, a11y)
+npm test            # 28 automated Vitest tests (domain, security, SSE, ErrorBoundary, a11y)
 npm run build       # Production Vite bundle + NodeNext server compilation
 ```
 
@@ -171,5 +171,5 @@ npm run build       # Production Vite bundle + NodeNext server compilation
 | **Code Quality** | High Impact | Strict TypeScript (`noUncheckedIndexedAccess`), modular layered architecture, 0 ESLint/a11y warnings |
 | **Security** | High Impact | Helmet CSP, CORS allowlist, Zod I/O schemas, prompt-injection guard, rate limiting, SSRF allowlist, non-root Docker |
 | **Efficiency** | High Impact | LRU+TTL cache with request coalescing, compression, pure-SVG charts & map (`~90 kB` gzipped JS) |
-| **Testing** | Medium Impact | 19/19 Vitest unit, integration, security & React a11y tests passing |
+| **Testing** | Medium Impact | 28/28 Vitest unit, integration, security, SSE, ErrorBoundary & React a11y tests passing |
 | **Accessibility** | Medium Impact | WCAG 2.1 AA landmarks, keyboard tabs, High-Contrast mode, screen-reader live regions & forecast data table |

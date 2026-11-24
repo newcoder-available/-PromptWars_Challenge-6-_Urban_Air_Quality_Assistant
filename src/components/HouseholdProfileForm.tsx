@@ -18,7 +18,7 @@ interface HouseholdProfileFormProps {
   onGeneratePlan: () => void;
 }
 
-const VULNERABLE_OPTIONS: Array<{ value: VulnerableGroup; label: string }> = [
+const VULNERABLE_OPTIONS: ReadonlyArray<{ value: VulnerableGroup; label: string }> = [
   { value: 'infants', label: 'Infants (0–2 yrs)' },
   { value: 'children', label: 'School Children' },
   { value: 'elderly', label: 'Seniors (65+)' },
@@ -58,11 +58,11 @@ export function HouseholdProfileForm({
       </div>
 
       <form
+        className="profile-form"
         onSubmit={(e) => {
           e.preventDefault();
           onGeneratePlan();
         }}
-        style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}
       >
         <div className="form-grid">
           <div className="field-group">
@@ -210,7 +210,7 @@ export function HouseholdProfileForm({
             </select>
           </div>
 
-          <div className="field-group" style={{ justifyContent: 'flex-end' }}>
+          <div className="field-group field-group-end">
             <label className="checkbox-pill">
               <input
                 type="checkbox"
@@ -224,7 +224,7 @@ export function HouseholdProfileForm({
           </div>
         </div>
 
-        <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+        <fieldset className="fieldset-clean">
           <legend className="field-label">Sensitive Household Members</legend>
           <div className="checkbox-grid">
             {VULNERABLE_OPTIONS.map((opt) => (
@@ -255,12 +255,7 @@ export function HouseholdProfileForm({
           />
         </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={generating}
-          style={{ padding: '0.72rem 1rem' }}
-        >
+        <button type="submit" className="btn btn-primary btn-submit" disabled={generating}>
           <Sparkles size={17} aria-hidden="true" />
           {generating ? 'Generating Tailored Action Plan...' : 'Generate Personalized AI Plan'}
         </button>

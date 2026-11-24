@@ -1605,3 +1605,237 @@ body {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Clean Semantic Component Utility Classes (Replaces Inline Styles)
+   ========================================================================== */
+
+.tab-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.details-card {
+  margin-top: 1.15rem;
+}
+
+.pollutant-grid-flush {
+  margin-top: 0;
+}
+
+.card-header-compact {
+  margin-bottom: 0.5rem;
+}
+
+.card-header-tight {
+  margin-bottom: 0.35rem;
+}
+
+.section-subheading {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.inline-icon {
+  vertical-align: text-bottom;
+}
+
+.inline-icon-mid {
+  vertical-align: middle;
+}
+
+.search-option-country {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.quick-cities-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.field-group-end {
+  justify-content: flex-end;
+}
+
+.fieldset-clean {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.btn-submit {
+  padding: 0.72rem 1rem;
+}
+
+.briefing-lead {
+  margin-top: 0;
+  color: var(--text-secondary);
+}
+
+.alert-banner-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 800;
+}
+
+.chip-row-spaced {
+  margin-bottom: 0.95rem;
+}
+
+.rec-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.02rem;
+}
+
+.rec-summary {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.rec-timing {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.community-brief-heading {
+  margin: 0;
+  font-size: 0.98rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.error-box-spaced {
+  margin-bottom: 1rem;
+}
+
+.error-box-top {
+  margin-top: 0.75rem;
+}
+
+.slider-panel {
+  background: var(--bg-elevated);
+  margin-bottom: 1.25rem;
+}
+
+.range-slider {
+  width: 100%;
+  accent-color: var(--brand);
+}
+
+.slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.stats-row {
+  margin-bottom: 1.25rem;
+}
+
+.subtitle-flush {
+  margin: 0;
+}
+
+.pledge-section-heading {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.pledge-checkbox {
+  margin-top: 0.25rem;
+}
+
+.pledge-title {
+  font-weight: 700;
+  font-size: 0.94rem;
+  cursor: pointer;
+  display: block;
+}
+
+.pledge-desc {
+  margin: 0.25rem 0 0.4rem;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+.tag-row-tight {
+  margin-bottom: 0.35rem;
+}
+
+.pledge-why {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.chat-text-pre {
+  white-space: pre-wrap;
+}
+
+.chat-takeaways {
+  margin: 0.6rem 0 0;
+  padding-left: 1.15rem;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+.chat-impact-badge {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.chat-form {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.error-boundary-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* AQI Spectrum Segment Colors */
+.seg-good {
+  background-color: #22c55e;
+}
+.seg-moderate {
+  background-color: #eab308;
+}
+.seg-poor {
+  background-color: #f97316;
+}
+.seg-unhealthy {
+  background-color: #ef4444;
+}
+.seg-severe {
+  background-color: #a855f7;
+}
+.seg-hazardous {
+  background-color: #9f1239;
+}

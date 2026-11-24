@@ -1,12 +1,20 @@
 import { z } from 'zod';
 
 /**
- * Strips ASCII control characters (except newline/tab) and trims whitespace
- * to prevent log injection and prompt formatting spoofing.
+ * Strips ASCII control characters (except newline and tab) and trims whitespace
+ * to prevent log injection and prompt delimiter spoofing.
  */
 export function sanitizePlainText(input: string): string {
-  // eslint-disable-next-line no-control-regex
-  return input.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim();
+  let cleaned = '';
+  for (let i = 0; i < input.length; i += 1) {
+    const code = input.charCodeAt(i);
+    const isAllowedControl = code === 9 || code === 10 || code === 13;
+    const isDisallowedControl = (code >= 0 && code <= 31 && !isAllowedControl) || code === 127;
+    if (!isDisallowedControl) {
+      cleaned += input[i] ?? '';
+    }
+  }
+  return cleaned.trim();
 }
 
 export const vulnerableGroupSchema = z.enum([
