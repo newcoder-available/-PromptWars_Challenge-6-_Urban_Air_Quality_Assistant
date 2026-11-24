@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 440" width="1120" height="440" role="img" aria-label="AirShield AI Live Urban Air Quality Dashboard Preview showing Live AQI 179, Masked Mascot, Frosted Weather Card, Global Rank, and Hyperlocal AQI Map">
+  <defs>
+    <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#24151c"/>
+      <stop offset="48%" stop-color="#5e2036"/>
+      <stop offset="100%" stop-color="#9e3156"/>
+    </linearGradient>
+    <linearGradient id="mapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="55%" stop-color="#3b1d36"/>
+      <stop offset="100%" stop-color="#6b2147"/>
+    </linearGradient>
+    <clipPath id="heroClip">
+      <rect x="28" y="106" width="796" height="260" rx="20"/>
+    </clipPath>
+    <clipPath id="mapClip">
+      <rect x="844" y="106" width="248" height="308" rx="20"/>
+    </clipPath>
+  </defs>
+
+  <!-- Canvas background -->
+  <rect width="1120" height="440" rx="22" fill="#0b1220"/>
+
+  <!-- Top Live Strip -->
+  <g transform="translate(28, 22)">
+    <rect x="0" y="0" width="60" height="22" rx="6" fill="#dc2626"/>
+    <circle cx="14" cy="11" r="3.5" fill="#ffffff"/>
+    <text x="23" y="15" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="11" font-weight="800" letter-spacing="0.06em">LIVE</text>
+    <text x="72" y="15" fill="#94a3b8" font-family="system-ui,Segoe UI,sans-serif" font-size="12" font-style="italic">Last Updated: Local Time · Real-time SSE Stream Active</text>
+
+    <text x="0" y="48" fill="#f8fafc" font-family="system-ui,Segoe UI,sans-serif" font-size="23" font-weight="800">New Delhi Air Quality Index (AQI) | Air Pollution</text>
+    <text x="0" y="69" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="13">Real-time PM2.5, PM10 &amp; winter smog dispersion intelligence · AirShield AI</text>
+
+    <!-- Action pills top-right -->
+    <g transform="translate(795, 22)">
+      <rect x="0" y="0" width="96" height="32" rx="8" fill="#111b2e" stroke="#38bdf8" stroke-width="1.2"/>
+      <text x="48" y="20" text-anchor="middle" fill="#e0f2fe" font-family="system-ui,Segoe UI,sans-serif" font-size="12" font-weight="700">Live Sync On</text>
+
+      <rect x="106" y="0" width="84" height="32" rx="8" fill="#111b2e" stroke="#475569"/>
+      <text x="148" y="20" text-anchor="middle" fill="#f8fafc" font-family="system-ui,Segoe UI,sans-serif" font-size="12" font-weight="700">Locate me</text>
+
+      <circle cx="214" cy="16" r="16" fill="rgba(244,63,94,0.16)" stroke="#f43f5e"/>
+      <text x="214" y="21" text-anchor="middle" fill="#f43f5e" font-family="system-ui,Segoe UI,sans-serif" font-size="14">♥</text>
+
+      <circle cx="254" cy="16" r="16" fill="#111b2e" stroke="#475569"/>
+      <text x="254" y="20" text-anchor="middle" fill="#f8fafc" font-family="system-ui,Segoe UI,sans-serif" font-size="13">↗</text>
+    </g>
+  </g>
+
+  <!-- Main Atmospheric Hero Banner -->
+  <rect x="28" y="106" width="796" height="260" rx="20" fill="url(#heroGrad)" stroke="rgba(255,255,255,0.16)"/>
+
+  <!-- Skyline Silhouette inside Hero -->
+  <g clip-path="url(#heroClip)">
+    <path d="M28 366 L28 332 L58 332 L58 312 L78 312 L78 292 L98 292 L98 322 L130 322 L130 282 L148 272 L166 282 L166 326 L210 326 L210 296 L228 296 L228 264 L242 264 L242 296 L264 296 L264 328 L302 328 L302 302 Q335 268 368 302 L368 328 L412 328 L412 284 L442 284 L442 324 L484 324 L484 270 L512 270 L512 294 L536 294 L536 324 L580 324 Q618 286 656 324 L700 324 L700 278 L730 278 L730 310 L760 310 L760 258 L778 258 L778 310 L824 310 L824 366 Z" fill="rgba(255,255,255,0.1)"/>
+  </g>
+
+  <!-- Left Column: Live AQI + Status + PM + Spectrum -->
+  <g transform="translate(56, 134)">
+    <circle cx="6" cy="8" r="5" fill="#fb7185"/>
+    <text x="18" y="12" fill="rgba(255,255,255,0.92)" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="700">Live AQI</text>
+
+    <text x="0" y="72" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="64" font-weight="900">179</text>
+    <text x="112" y="72" fill="rgba(255,255,255,0.82)" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="700">AQI (US)</text>
+
+    <!-- Status frosted pill -->
+    <text x="186" y="24" fill="rgba(255,255,255,0.82)" font-family="system-ui,Segoe UI,sans-serif" font-size="12">Air Quality is</text>
+    <rect x="186" y="34" width="126" height="40" rx="10" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.28)"/>
+    <text x="249" y="60" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="17" font-weight="800">Unhealthy</text>
+
+    <!-- PM2.5 & PM10 -->
+    <text x="0" y="110" fill="rgba(255,255,255,0.92)" font-family="system-ui,Segoe UI,sans-serif" font-size="14">PM2.5 : <tspan font-weight="800" fill="#ffffff">95 µg/m³</tspan></text>
+    <text x="148" y="110" fill="rgba(255,255,255,0.92)" font-family="system-ui,Segoe UI,sans-serif" font-size="14">PM10 : <tspan font-weight="800" fill="#ffffff">133 µg/m³</tspan></text>
+
+    <rect x="0" y="124" width="144" height="22" rx="11" fill="rgba(15,23,42,0.45)" stroke="rgba(255,255,255,0.25)"/>
+    <text x="72" y="139" text-anchor="middle" fill="#fecdd3" font-family="system-ui,Segoe UI,sans-serif" font-size="11" font-weight="800">6.3× WHO 24h limit</text>
+
+    <!-- Spectrum Bar -->
+    <g transform="translate(0, 162)">
+      <text x="0" y="0" fill="rgba(255,255,255,0.88)" font-family="system-ui,Segoe UI,sans-serif" font-size="10" font-weight="700">Good</text>
+      <text x="54" y="0" fill="rgba(255,255,255,0.88)" font-family="system-ui,Segoe UI,sans-serif" font-size="10" font-weight="700">Moderate</text>
+      <text x="115" y="0" fill="rgba(255,255,255,0.88)" font-family="system-ui,Segoe UI,sans-serif" font-size="10" font-weight="700">Poor</text>
+      <text x="158" y="0" fill="rgba(255,255,255,0.88)" font-family="system-ui,Segoe UI,sans-serif" font-size="10" font-weight="700">Unhealthy</text>
+      <text x="220" y="0" fill="rgba(255,255,255,0.88)" font-family="system-ui,Segoe UI,sans-serif" font-size="10" font-weight="700">Severe</text>
+      <text x="266" y="0" fill="rgba(255,255,255,0.88)" font-family="system-ui,Segoe UI,sans-serif" font-size="10" font-weight="700">Hazardous</text>
+
+      <rect x="0" y="9" width="51" height="8" rx="4" fill="#22c55e"/>
+      <rect x="54" y="9" width="51" height="8" rx="4" fill="#eab308"/>
+      <rect x="108" y="9" width="51" height="8" rx="4" fill="#f97316"/>
+      <rect x="162" y="9" width="51" height="8" rx="4" fill="#ef4444"/>
+      <rect x="216" y="9" width="51" height="8" rx="4" fill="#a855f7"/>
+      <rect x="270" y="9" width="51" height="8" rx="4" fill="#9f1239"/>
+
+      <!-- Pointer dot at AQI 179 -->
+      <circle cx="192" cy="13" r="7" fill="#ffffff" stroke="#0f172a" stroke-width="3"/>
+
+      <text x="0" y="32" fill="rgba(255,255,255,0.75)" font-family="system-ui,Segoe UI,sans-serif" font-size="10">0</text>
+      <text x="54" y="32" fill="rgba(255,255,255,0.75)" font-family="system-ui,Segoe UI,sans-serif" font-size="10">50</text>
+      <text x="108" y="32" fill="rgba(255,255,255,0.75)" font-family="system-ui,Segoe UI,sans-serif" font-size="10">100</text>
+      <text x="162" y="32" fill="rgba(255,255,255,0.75)" font-family="system-ui,Segoe UI,sans-serif" font-size="10">150</text>
+      <text x="216" y="32" fill="rgba(255,255,255,0.75)" font-family="system-ui,Segoe UI,sans-serif" font-size="10">200</text>
+      <text x="270" y="32" fill="rgba(255,255,255,0.75)" font-family="system-ui,Segoe UI,sans-serif" font-size="10">301+</text>
+    </g>
+  </g>
+
+  <!-- Center Column: Expressive AirShield N95 Mascot -->
+  <g transform="translate(396, 174) scale(1.12)">
+    <g opacity="0.48">
+      <ellipse cx="22" cy="40" rx="14" ry="7" fill="#ffffff"/>
+      <ellipse cx="106" cy="48" rx="16" ry="8" fill="#ffffff"/>
+    </g>
+    <ellipse cx="65" cy="156" rx="30" ry="6" fill="rgba(0,0,0,0.3)"/>
+    <rect x="52" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+    <rect x="69" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+    <path d="M44 92 C44 82, 86 82, 86 92 L90 132 C90 136, 40 136, 40 132 Z" fill="#ec4899" stroke="#0f172a" stroke-width="2.2"/>
+    <path d="M58 86 L65 104 L72 86" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+    <path d="M44 95 L32 118 C30 122, 36 125, 39 121 L49 104" fill="#ec4899" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M86 95 L98 118 C100 122, 94 125, 91 121 L81 104" fill="#ec4899" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+    <circle cx="34" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+    <circle cx="96" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+    <rect x="59" y="76" width="12" height="12" rx="4" fill="#f5c09a"/>
+    <circle cx="65" cy="54" r="27" fill="#f7c8a4" stroke="#0f172a" stroke-width="2.4"/>
+    <path d="M38 50 C36 26, 56 18, 72 22 C86 24, 94 34, 92 50 C86 38, 78 36, 70 38 C60 40, 48 34, 38 50 Z" fill="#3b1f14" stroke="#0f172a" stroke-width="2"/>
+    <path d="M62 21 Q68 12 75 20" fill="none" stroke="#3b1f14" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="38" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+    <circle cx="92" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+    <path d="M49 45 Q55 42 60 46" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M70 46 Q75 42 81 45" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M50 53 Q55 50 60 53" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+    <path d="M70 53 Q75 50 80 53" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+    <path d="M84 41 Q88 47 84 50 Q80 47 84 41 Z" fill="#bae6fd" stroke="#0284c7" stroke-width="1.2"/>
+    <path d="M39 58 L50 63" stroke="#e2e8f0" stroke-width="2"/>
+    <path d="M91 58 L80 63" stroke="#e2e8f0" stroke-width="2"/>
+    <path d="M40 62 L50 71" stroke="#e2e8f0" stroke-width="2"/>
+    <path d="M90 62 L80 71" stroke="#e2e8f0" stroke-width="2"/>
+    <path d="M49 60 Q65 56 81 60 L79 75 Q65 81 51 75 Z" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+    <line x1="55" y1="65" x2="75" y2="65" stroke="#cbd5e1" stroke-width="1.5"/>
+    <line x1="56" y1="70" x2="74" y2="70" stroke="#cbd5e1" stroke-width="1.5"/>
+  </g>
+
+  <!-- Right Column inside Hero: Frosted Weather Glass Card -->
+  <g transform="translate(550, 154)">
+    <rect width="248" height="148" rx="14" fill="rgba(15,23,42,0.42)" stroke="rgba(255,255,255,0.22)"/>
+    <!-- Cloud glyph + temp -->
+    <ellipse cx="38" cy="40" rx="16" ry="10" fill="#e2e8f0"/>
+    <circle cx="32" cy="34" r="9" fill="#f8fafc"/>
+    <line x1="22" y1="54" x2="54" y2="54" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+    <text x="66" y="48" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="28" font-weight="800">21 °C</text>
+    <text x="230" y="46" text-anchor="end" fill="#f1f5f9" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="600">Smoky haze</text>
+
+    <line x1="16" y1="74" x2="232" y2="74" stroke="rgba(255,255,255,0.18)"/>
+
+    <text x="18" y="98" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="11">Humidity</text>
+    <text x="18" y="120" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="800">44 %</text>
+
+    <text x="96" y="98" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="11">Wind Speed</text>
+    <text x="96" y="120" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="800">4 km/h</text>
+
+    <text x="186" y="98" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="11">UV Index</text>
+    <text x="186" y="120" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="15" font-weight="800">0</text>
+  </g>
+
+  <!-- Global Rank Ribbon below Hero -->
+  <g transform="translate(52, 360)">
+    <rect width="748" height="54" rx="12" fill="#111b2e" stroke="#2a3a57"/>
+    <rect x="14" y="11" width="96" height="32" rx="8" fill="#dc2626"/>
+    <text x="62" y="31" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="800">Rank  60th</text>
+    <text x="128" y="31" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="13">Currently, New Delhi ranks near #60 globally. Low wind (4 km/h) is trapping winter smog near ground level.</text>
+  </g>
+
+  <!-- Right Panel: Interactive Hyperlocal AQI Map -->
+  <rect x="844" y="106" width="248" height="308" rx="20" fill="url(#mapGrad)" stroke="rgba(255,255,255,0.16)"/>
+  <g clip-path="url(#mapClip)">
+    <path d="M834 328 Q910 296 972 324 T1100 302 L1100 350 Q995 368 940 348 T834 366 Z" fill="rgba(56,189,248,0.15)"/>
+    <ellipse cx="896" cy="294" rx="34" ry="22" fill="rgba(52,211,153,0.16)"/>
+    <g stroke="rgba(255,255,255,0.15)" stroke-width="1.5" fill="none">
+      <path d="M844 176 L1092 202"/>
+      <path d="M844 260 L1092 238"/>
+      <path d="M906 106 L928 414"/>
+      <path d="M1008 106 L986 414"/>
+      <circle cx="966" cy="244" r="68" stroke-dasharray="4 4"/>
+    </g>
+  </g>
+
+  <!-- Map Top Badge -->
+  <rect x="916" y="120" width="104" height="30" rx="10" fill="rgba(15,23,42,0.82)" stroke="rgba(255,255,255,0.2)"/>
+  <text x="950" y="140" text-anchor="middle" fill="#38bdf8" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="900">AQI</text>
+  <text x="986" y="140" text-anchor="middle" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="800">Map</text>
+
+  <!-- Station AQI Bubbles -->
+  <g font-family="system-ui,Segoe UI,sans-serif" font-size="11" font-weight="900" text-anchor="middle" fill="#ffffff">
+    <circle cx="934" cy="182" r="16" fill="#e11d48" stroke="#ffffff" stroke-width="2"/><text x="934" y="186">192</text>
+    <circle cx="1028" cy="196" r="16" fill="#9333ea" stroke="#ffffff" stroke-width="2"/><text x="1028" y="200">224</text>
+    <circle cx="894" cy="214" r="16" fill="#e11d48" stroke="#ffffff" stroke-width="2"/><text x="894" y="218">165</text>
+    <circle cx="972" cy="238" r="19" fill="#e11d48" stroke="#ffffff" stroke-width="3"/><text x="972" y="242">179</text>
+    <circle cx="1050" cy="256" r="16" fill="#9333ea" stroke="#ffffff" stroke-width="2"/><text x="1050" y="260">242</text>
+    <circle cx="892" cy="284" r="16" fill="#ea580c" stroke="#ffffff" stroke-width="2"/><text x="892" y="288">138</text>
+    <circle cx="988" cy="306" r="16" fill="#e11d48" stroke="#ffffff" stroke-width="2"/><text x="988" y="310">204</text>
+  </g>
+
+  <!-- Selected Station Card inside Map -->
+  <g transform="translate(856, 332)">
+    <rect width="224" height="68" rx="10" fill="rgba(15,23,42,0.86)" stroke="rgba(255,255,255,0.18)"/>
+    <text x="12" y="20" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="11.5" font-weight="800">New Delhi Central · 0.6 km</text>
+    <text x="12" y="37" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="10.5">Residential Block · PM2.5: 95 µg/m³</text>
+    <text x="12" y="56" fill="#86efac" font-family="system-ui,Segoe UI,sans-serif" font-size="10.5" font-weight="700">↗ Cleanest nearby: Green Park (AQI 138)</text>
+  </g>
+</svg>

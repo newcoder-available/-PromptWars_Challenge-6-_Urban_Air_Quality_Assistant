@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 270" width="920" height="270" role="img" aria-label="AirShield AI Dynamic Mascot States: Good Air, Unhealthy Winter Smog, and Hazardous Air Shield">
+  <defs>
+    <linearGradient id="bg-good" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b241d"/>
+      <stop offset="55%" stop-color="#0f4c3a"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="bg-unhealthy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#24151c"/>
+      <stop offset="55%" stop-color="#5e2036"/>
+      <stop offset="100%" stop-color="#9e3156"/>
+    </linearGradient>
+    <linearGradient id="bg-hazardous" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d132b"/>
+      <stop offset="55%" stop-color="#4c1d73"/>
+      <stop offset="100%" stop-color="#9d174d"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="920" height="270" rx="18" fill="#0b1220"/>
+
+  <!-- Card 1: Good Air -->
+  <g transform="translate(18, 18)">
+    <rect width="282" height="234" rx="16" fill="url(#bg-good)" stroke="rgba(255,255,255,0.16)"/>
+    <text x="20" y="34" fill="#6ee7b7" font-family="system-ui,Segoe UI,sans-serif" font-size="12" font-weight="800" letter-spacing="0.06em">AQI 0–50 · GOOD</text>
+    <text x="20" y="56" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="17" font-weight="800">Fresh Air &amp; Ventilation</text>
+    <text x="20" y="76" fill="#d1fae5" font-family="system-ui,Segoe UI,sans-serif" font-size="12">Ideal for outdoor play &amp; airing out</text>
+
+    <g transform="translate(78, 82) scale(0.92)">
+      <circle cx="24" cy="36" r="5" fill="#6ee7b7"/>
+      <circle cx="108" cy="28" r="4" fill="#a7f3d0"/>
+      <path d="M98 54 C104 44, 118 46, 114 58 C108 62, 99 60, 98 54 Z" fill="#34d399"/>
+      <ellipse cx="65" cy="156" rx="30" ry="6" fill="rgba(0,0,0,0.28)"/>
+      <rect x="52" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+      <rect x="69" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+      <path d="M44 92 C44 82, 86 82, 86 92 L90 132 C90 136, 40 136, 40 132 Z" fill="#10b981" stroke="#0f172a" stroke-width="2.2"/>
+      <path d="M58 86 L65 104 L72 86" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+      <path d="M44 95 L32 118 C30 122, 36 125, 39 121 L49 104" fill="#10b981" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M86 95 L98 118 C100 122, 94 125, 91 121 L81 104" fill="#10b981" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="34" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <circle cx="96" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <rect x="59" y="76" width="12" height="12" rx="4" fill="#f5c09a"/>
+      <circle cx="65" cy="54" r="27" fill="#f7c8a4" stroke="#0f172a" stroke-width="2.4"/>
+      <path d="M38 50 C36 26, 56 18, 72 22 C86 24, 94 34, 92 50 C86 38, 78 36, 70 38 C60 40, 48 34, 38 50 Z" fill="#3b1f14" stroke="#0f172a" stroke-width="2"/>
+      <path d="M62 21 Q68 12 75 20" fill="none" stroke="#3b1f14" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="38" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <circle cx="92" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <circle cx="55" cy="52" r="3" fill="#0f172a"/>
+      <circle cx="75" cy="52" r="3" fill="#0f172a"/>
+      <circle cx="56" cy="51" r="1" fill="#ffffff"/>
+      <circle cx="76" cy="51" r="1" fill="#ffffff"/>
+      <ellipse cx="47" cy="60" rx="4.5" ry="2.5" fill="rgba(244,63,94,0.35)"/>
+      <ellipse cx="83" cy="60" rx="4.5" ry="2.5" fill="rgba(244,63,94,0.35)"/>
+      <path d="M55 64 Q65 74 75 64" fill="none" stroke="#7c2d12" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Card 2: Unhealthy Winter Smog -->
+  <g transform="translate(319, 18)">
+    <rect width="282" height="234" rx="16" fill="url(#bg-unhealthy)" stroke="rgba(255,255,255,0.16)"/>
+    <text x="20" y="34" fill="#fda4af" font-family="system-ui,Segoe UI,sans-serif" font-size="12" font-weight="800" letter-spacing="0.06em">AQI 151–200 · UNHEALTHY</text>
+    <text x="20" y="56" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="17" font-weight="800">N95 Mask &amp; Smoky Haze</text>
+    <text x="20" y="76" fill="#ffe4e6" font-family="system-ui,Segoe UI,sans-serif" font-size="12">Seal drafts · Shift trips to midday dip</text>
+
+    <g transform="translate(78, 82) scale(0.92)">
+      <g opacity="0.5">
+        <ellipse cx="22" cy="40" rx="14" ry="7" fill="#ffffff"/>
+        <ellipse cx="106" cy="48" rx="16" ry="8" fill="#ffffff"/>
+      </g>
+      <ellipse cx="65" cy="156" rx="30" ry="6" fill="rgba(0,0,0,0.28)"/>
+      <rect x="52" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+      <rect x="69" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+      <path d="M44 92 C44 82, 86 82, 86 92 L90 132 C90 136, 40 136, 40 132 Z" fill="#ec4899" stroke="#0f172a" stroke-width="2.2"/>
+      <path d="M58 86 L65 104 L72 86" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+      <path d="M44 95 L32 118 C30 122, 36 125, 39 121 L49 104" fill="#ec4899" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M86 95 L98 118 C100 122, 94 125, 91 121 L81 104" fill="#ec4899" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="34" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <circle cx="96" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <rect x="59" y="76" width="12" height="12" rx="4" fill="#f5c09a"/>
+      <circle cx="65" cy="54" r="27" fill="#f7c8a4" stroke="#0f172a" stroke-width="2.4"/>
+      <path d="M38 50 C36 26, 56 18, 72 22 C86 24, 94 34, 92 50 C86 38, 78 36, 70 38 C60 40, 48 34, 38 50 Z" fill="#3b1f14" stroke="#0f172a" stroke-width="2"/>
+      <path d="M62 21 Q68 12 75 20" fill="none" stroke="#3b1f14" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="38" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <circle cx="92" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <path d="M49 45 Q55 42 60 46" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M70 46 Q75 42 81 45" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M50 53 Q55 50 60 53" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+      <path d="M70 53 Q75 50 80 53" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+      <path d="M84 41 Q88 47 84 50 Q80 47 84 41 Z" fill="#bae6fd" stroke="#0284c7" stroke-width="1.2"/>
+      <path d="M39 58 L50 63" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M91 58 L80 63" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M40 62 L50 71" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M90 62 L80 71" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M49 60 Q65 56 81 60 L79 75 Q65 81 51 75 Z" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+      <line x1="55" y1="65" x2="75" y2="65" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="56" y1="70" x2="74" y2="70" stroke="#cbd5e1" stroke-width="1.5"/>
+    </g>
+  </g>
+
+  <!-- Card 3: Severe / Hazardous Shield -->
+  <g transform="translate(620, 18)">
+    <rect width="282" height="234" rx="16" fill="url(#bg-hazardous)" stroke="rgba(255,255,255,0.16)"/>
+    <text x="20" y="34" fill="#f0abfc" font-family="system-ui,Segoe UI,sans-serif" font-size="12" font-weight="800" letter-spacing="0.06em">AQI 201+ · SEVERE / HAZARDOUS</text>
+    <text x="20" y="56" fill="#ffffff" font-family="system-ui,Segoe UI,sans-serif" font-size="17" font-weight="800">Indoor Clean-Air Shield</text>
+    <text x="20" y="76" fill="#fae8ff" font-family="system-ui,Segoe UI,sans-serif" font-size="12">HEPA / DIY MERV-13 · Zero-burn pact</text>
+
+    <g transform="translate(78, 82) scale(0.92)">
+      <g opacity="0.65">
+        <ellipse cx="22" cy="40" rx="14" ry="7" fill="#ffffff"/>
+        <ellipse cx="106" cy="48" rx="16" ry="8" fill="#ffffff"/>
+        <ellipse cx="96" cy="24" rx="12" ry="6" fill="#f9a8d4"/>
+      </g>
+      <circle cx="65" cy="86" r="54" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="2.5" stroke-dasharray="6 5"/>
+      <ellipse cx="65" cy="156" rx="30" ry="6" fill="rgba(0,0,0,0.28)"/>
+      <rect x="52" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+      <rect x="69" y="128" width="9" height="24" rx="4" fill="#1e293b"/>
+      <path d="M44 92 C44 82, 86 82, 86 92 L90 132 C90 136, 40 136, 40 132 Z" fill="#a855f7" stroke="#0f172a" stroke-width="2.2"/>
+      <path d="M58 86 L65 104 L72 86" fill="none" stroke="#0f172a" stroke-width="1.8"/>
+      <path d="M44 95 L32 118 C30 122, 36 125, 39 121 L49 104" fill="#a855f7" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M86 95 L98 118 C100 122, 94 125, 91 121 L81 104" fill="#a855f7" stroke="#0f172a" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="34" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <circle cx="96" cy="121" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <rect x="59" y="76" width="12" height="12" rx="4" fill="#f5c09a"/>
+      <circle cx="65" cy="54" r="27" fill="#f7c8a4" stroke="#0f172a" stroke-width="2.4"/>
+      <path d="M38 50 C36 26, 56 18, 72 22 C86 24, 94 34, 92 50 C86 38, 78 36, 70 38 C60 40, 48 34, 38 50 Z" fill="#3b1f14" stroke="#0f172a" stroke-width="2"/>
+      <path d="M62 21 Q68 12 75 20" fill="none" stroke="#3b1f14" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="38" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <circle cx="92" cy="56" r="5" fill="#f5c09a" stroke="#0f172a" stroke-width="1.8"/>
+      <path d="M49 45 Q55 42 60 46" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M70 46 Q75 42 81 45" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M50 53 Q55 50 60 53" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+      <path d="M70 53 Q75 50 80 53" fill="none" stroke="#0f172a" stroke-width="2.3" stroke-linecap="round"/>
+      <path d="M84 41 Q88 47 84 50 Q80 47 84 41 Z" fill="#bae6fd" stroke="#0284c7" stroke-width="1.2"/>
+      <path d="M39 58 L50 63" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M91 58 L80 63" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M40 62 L50 71" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M90 62 L80 71" stroke="#e2e8f0" stroke-width="2"/>
+      <path d="M49 60 Q65 56 81 60 L79 75 Q65 81 51 75 Z" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+      <line x1="55" y1="65" x2="75" y2="65" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="56" y1="70" x2="74" y2="70" stroke="#cbd5e1" stroke-width="1.5"/>
+    </g>
+  </g>
+</svg>
