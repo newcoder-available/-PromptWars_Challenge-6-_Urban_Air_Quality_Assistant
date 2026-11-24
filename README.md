@@ -99,7 +99,13 @@ npm run build
 NODE_ENV=production npm start
 ```
 
-### 5. Secure Docker Deployment
+### 5. Deploy on Vercel (One-Click Ready)
+This repository includes [vercel.json](./vercel.json) and a serverless Express entrypoint ([api/index.ts](./api/index.ts)) pinned to Node `22.x`:
+1. Import the GitHub repository into **Vercel** (Framework Preset: `Vite`, auto-configured via `vercel.json`).
+2. *(Optional)* Add `GEMINI_API_KEY` under **Project Settings → Environment Variables** for live Google Gemini responses (without it, the built-in Local Domain Engine runs automatically).
+3. Deploy — Vercel serves the React SPA from `dist/client` and routes all `/api/*` requests to `api/index.ts`.
+
+### 6. Secure Docker Deployment
 ```bash
 docker build -t airshield-ai .
 docker run -p 8080:8080 \

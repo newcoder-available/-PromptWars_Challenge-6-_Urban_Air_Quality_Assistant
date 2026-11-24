@@ -25,6 +25,17 @@ function resolveAllowedOrigins(override?: string[]): Set<string> {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
+  // Automatically trust Vercel preview and production deployment URLs
+  for (const vercelHost of [
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ]) {
+    if (vercelHost) {
+      envOrigins.push(`https://${vercelHost.replace(/^https?:\/\//, '')}`);
+    }
+  }
+
   return new Set(envOrigins);
 }
 
@@ -104,11 +115,13 @@ export function createApp(config: AppConfig = {}): Express {
     });
   });
 
-  // Serve compiled Vite client bundle in production when present
+  // Serve compiled Vite client bundle in self-hosted production (Vercel CDN serves static files directly)
   const clientDistDir = path.resolve(process.cwd(), 'dist', 'client');
   const shouldServeStatic =
     config.serveStatic ??
-    (process.env.NODE_ENV === 'production' && fs.existsSync(clientDistDir));
+    (process.env.NODE_ENV === 'production' &&
+      process.env.VERCEL !== '1' &&
+      fs.existsSync(clientDistDir));
 
   if (shouldServeStatic && fs.existsSync(clientDistDir)) {
     app.use(

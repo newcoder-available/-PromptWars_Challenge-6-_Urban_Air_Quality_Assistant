@@ -113,6 +113,15 @@ export function createApiRouter(options: ApiRouterOptions = {}): Router {
       };
 
       await pushUpdate();
+
+      // In serverless environments (e.g., Vercel), send standard SSE retry directive
+      // and close cleanly so EventSource reconnects automatically without function timeouts.
+      if (process.env.VERCEL === '1') {
+        res.write('retry: 45000\n\n');
+        res.end();
+        return;
+      }
+
       const interval = setInterval(() => {
         void pushUpdate();
       }, 45_000);
