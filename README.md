@@ -8,8 +8,8 @@
 [![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Express 5](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![Security](https://img.shields.io/badge/Security-Helmet%20CSP%20%2B%20Zod%20%2B%20RateLimit-0b6e4f)](./SECURITY.md)
-[![Accessibility](https://img.shields.io/badge/WCAG%202.1-AA%20Accessible-0369a1)](#accessibility--inclusive-design)
-[![Tests](https://img.shields.io/badge/Vitest-28%2F28%20Passing-16a34a)](#testing--verification)
+[![Accessibility](https://img.shields.io/badge/WCAG%202.2-AA%20Accessible-0369a1)](#accessibility--inclusive-design-wcag-22-aa)
+[![Tests](https://img.shields.io/badge/Vitest-40%2F40%20Passing%20(92.8%25%20Lines)-16a34a)](#testing--verification)
 
 </div>
 
@@ -20,42 +20,46 @@
 ![AirShield AI Live Atmospheric Dashboard Preview](docs/assets/dashboard-hero-preview.svg)
 
 ### 🎭 Dynamic AirShield AI Mascot States
-The built-in vector mascot (`src/components/AqiMascotSvg.tsx`) reacts dynamically to real-time air quality severity so families—including kids and seniors—can understand air risk at a single glance alongside explicit text labels and numeric AQI ranges:
+The built-in vector mascot (`src/components/AqiMascotSvg.tsx`) adapts dynamically to real-time air quality severity so families—including kids and seniors—can understand air risk at a glance alongside explicit text labels and numeric AQI ranges:
 
 ![AirShield AI Dynamic Mascot States](docs/assets/mascot-showcase.svg)
 
 ---
 
-## ✨ Core Features (Problem Statement Alignment)
+## 🗺️ Problem Statement Requirement → Code Mapping
 
-| Capability | How It Helps Families & Communities |
+| Problem Statement Requirement | Implementing Code |
 | --- | --- |
-| **🔴 Real-Time Live AQI & Weather Stream (SSE)** | Streams live US AQI, PM2.5, PM10, NO₂, O₃, CO, Temperature, Humidity, Wind Speed, and UV Index via Open-Meteo APIs + Server-Sent Events (`/api/air-quality/stream`) with pause/resume controls, saved favorite cities, and offline resilience. |
-| **🗺️ Hyperlocal Interactive `AQI Map`** | Pure-SVG neighborhood station map highlighting localized micro-environments (Residential, School Corridor, Arterial Highway, Industrial Ring, Green Park) and surfacing the **cleanest nearby zone** for errands or walks. |
-| **⏰ Safest 2-Hour Window & Inversion Risk** | Analyzes 24-hour forecasts to pinpoint the lowest-PM2.5 window for school runs or brief cross-ventilation and flags **Winter Thermal Inversion** trapping hours. |
-| **👨‍👩‍👧‍👦 Household & Community Profiler** | Tailors every plan to household size, vulnerable members (infants, kids, seniors, asthma/COPD, pregnant members), home type, HEPA ownership, cooking fuel, commute mode & distance, budget tier, and role (Family, School PTA, Neighborhood RWA). |
-| **🤖 GenAI Action Plan & Smog Advisor Chat** | Powered by **Google Gemini (`gemini-2.5-flash`)** structured JSON output with automatic fallback to the offline **AirShield Local Domain Engine**. Delivers **Low-Emission Routines**, **Indoor Air Hacks** (including DIY Corsi-Rosenthal MERV-13 filter steps), **Sustainable Swaps**, **Community Actions**, and a copyable/printable **Neighborhood & School Smog Alert**. |
-| **📊 Direct Choice & Community Impact Simulator** | Quantifies multiplicative PM2.5 inhalation reduction, estimated indoor PM2.5 drop, avoided cigarette-equivalents/month, and scales emissions savings (`kg CO₂`, `kg PM2.5`, equivalent urban trees, and monthly budget impact) from **1 family to 1,000 households**. |
+| **Navigate severe winter smog & urban air pollution (live location-tailored intelligence)** | `server/services/airQualityService.ts`, `server/services/airQuality/aqiAnalytics.ts` (EPA AQI, safest 2h window, thermal inversion risk), `server/services/airQuality/fallbackProvider.ts` (hyperlocal stations & offline resilience), `src/components/AtmosphericHeroBanner.tsx`, `src/components/HyperlocalAqiMap.tsx`, `src/components/ForecastChart.tsx` |
+| **Low-emission daily routines tailored to location & lifestyle** | `server/ai/builders/commute.ts`, `server/ai/prompts.ts`, `src/components/HouseholdProfileForm.tsx`, `src/components/ActionPlanView.tsx`, `src/components/RecommendationCard.tsx` |
+| **Indoor air quality (IAQ) hacks (HEPA & low-cost DIY Corsi-Rosenthal filtration)** | `server/ai/builders/indoorAir.ts`, `server/ai/localChatEngine.ts`, `shared/constants.ts` (`PLEDGE_ACTIONS`) |
+| **Sustainable alternatives (clean cooking, low-VOC home care, clean mobility)** | `server/ai/builders/cooking.ts`, `server/ai/builders/commute.ts`, `src/components/ImpactSimulator.tsx`, `src/components/PledgeActionCard.tsx` |
+| **Community & family-focused action (Family, School PTA, Neighborhood RWA briefs)** | `server/ai/builders/community.ts`, `server/ai/localPlanEngine.ts` (copyable/printable RWA/PTA smog alert), `src/components/ActionPlanView.tsx` |
+| **Clearly explain the direct impact of choices (personal health + community emissions)** | `server/services/impactCalculator.ts` (multiplicative PM2.5 reduction, cigarette parity, CO₂/PM2.5/tree scaling), `src/components/ImpactSimulator.tsx`, `src/components/RecommendationCard.tsx` |
+| **GenAI-powered assistant (structured plans + conversational Q&A)** | `server/ai/llmClient.ts`, `server/ai/geminiClient.ts` (Gemini 2.5 Flash + bounded retry + Zod validation), `server/ai/prompts.ts`, `server/ai/promptGuard.ts`, `server/services/aiAdvisorService.ts`, `src/components/AdvisorChat.tsx` |
+| **Real-time live updates & responsive UX** | `server/controllers/airQualityController.ts` (`/api/air-quality/stream` SSE + serverless auto-retry), `src/hooks/useLiveAirQualityStream.ts`, `src/components/LiveStatusHeader.tsx` |
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Layered System Architecture
 
 ```text
-┌────────────────────────────────────┐      REST + Live SSE      ┌──────────────────────────────────────┐
-│    React 19 + TypeScript + Vite    │ ◄───────────────────────► │      Express 5 + TypeScript API      │
-│  • Dark / Light / High-Contrast    │                           │  • Helmet CSP + Permissions-Policy   │
-│  • Pure-SVG Forecast & AQI Map     │                           │  • Strict CORS + 16 KB Body Limit    │
-│  • Dynamic Vector Mascot           │                           │  • Zod Validation + Rate Limiter     │
-└────────────────────────────────────┘                           └──────────────────┬───────────────────┘
-                                                                                    │
-                                             ┌──────────────────────────────────────┼──────────────────────────────────────┐
-                                             ▼                                      ▼                                      ▼
-                                  ┌─────────────────────┐                ┌─────────────────────┐                ┌─────────────────────┐
-                                  │ TtlLruCache +       │                │ AirQualityService   │                │ AiAdvisorService    │
-                                  │ Request Coalescing  │                │ Open-Meteo AQ +     │                │ Gemini GenAI JSON + │
-                                  │ (Zero Stampedes)    │                │ Weather + Stations  │                │ Injection Firewall  │
-                                  └─────────────────────┘                └─────────────────────┘                └─────────────────────┘
+┌──────────────────────────────────────────┐     REST + Live SSE     ┌───────────────────────────────────────────┐
+│        Frontend UI (src/ — React 19)     │ ◄─────────────────────► │       API Layer (api/ + server/)          │
+│  • components/ (Hero, Map, Chart, Chat)  │                         │  • app.ts (Helmet CSP, CORS, X-Request-Id)│
+│  • hooks/ (SSE, Favorites, Clipboard)    │                         │  • routes/api.ts (rate limiters)          │
+│  • lib/apiClient.ts (Abort timeout)      │                         │  • controllers/ (health, AQ, advisor, sim)│
+└──────────────────────────────────────────┘                         └─────────────────────┬─────────────────────┘
+                                                                                           │
+                    ┌───────────────────────────────────┬──────────────────────────────────┼───────────────────────────────┐
+                    ▼                                   ▼                                  ▼                               ▼
+       ┌─────────────────────────┐         ┌─────────────────────────┐        ┌─────────────────────────┐     ┌─────────────────────────┐
+       │ config/ & utils/        │         │ services/ (Domain)      │        │ ai/ (Isolated GenAI)    │     │ shared/ (Contracts)     │
+       │ • env.ts (Zod env)      │         │ • airQualityService.ts  │        │ • llmClient.ts (iface)  │     │ • types.ts              │
+       │ • constants.ts          │         │ • aiAdvisorService.ts   │        │ • geminiClient.ts       │     │ • schemas.ts (Zod I/O)  │
+       │ • logger.ts (JSON)      │         │ • impactCalculator.ts   │        │ • prompts.ts + guard.ts │     │ • constants.ts          │
+       │ • errors.ts (AppError)  │         │ • cacheService.ts (LRU) │        │ • schemas.ts + builders │     └─────────────────────────┘
+       └─────────────────────────┘         └─────────────────────────┘        └─────────────────────────┘
 ```
 
 ---
@@ -63,7 +67,7 @@ The built-in vector mascot (`src/components/AqiMascotSvg.tsx`) reacts dynamicall
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js `>= 20.0.0`** (verified on Node.js 24)
+- **Node.js `22.x` LTS** (pinned in `package.json` `engines`)
 
 ### 1. Clone & Install
 ```bash
@@ -72,21 +76,19 @@ cd -PromptWars_Challenge-6-_Urban_Air_Quality_Assistant
 npm install
 ```
 
-### 2. Configure Environment (Optional for Live Gemini)
-```bash
-cp .env.example .env
-```
-Edit `.env` if you want to enable live Google Gemini responses:
-```env
-PORT=3001
-ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
-OFFLINE_MODE=false
-```
-> **Zero-Setup Demo Friendly:** If `GEMINI_API_KEY` is left blank, AirShield AI automatically runs its deterministic **Local Domain Engine**, so every dashboard widget, tailored plan, simulator calculation, and advisor chat works immediately out of the box.
+### 2. Environment Variables
+Copy `.env.example` to `.env` and configure as needed:
 
-### 3. Run in Development Mode
+| Variable | Default | Required | Purpose |
+| --- | --- | --- | --- |
+| `PORT` | `3001` | No | HTTP server port (self-hosted / Docker) |
+| `NODE_ENV` | `development` | No | Runtime mode (`development` / `production` / `test`) |
+| `ALLOWED_ORIGINS` | localhost dev origins | Prod | Comma-separated CORS allowlist (Vercel URLs auto-trusted) |
+| `GEMINI_API_KEY` | *(empty)* | Optional | Server-side Google Gemini API key. If omitted, the built-in **AirShield Local Domain Engine** runs automatically |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | No | Allowlisted Gemini model identifier |
+| `OFFLINE_MODE` | `false` | No | Set `true` to disable external Open-Meteo/Gemini fetches and use deterministic winter-smog fixtures |
+
+### 3. Run Locally
 ```bash
 npm run dev
 ```
@@ -99,11 +101,11 @@ npm run build
 NODE_ENV=production npm start
 ```
 
-### 5. Deploy on Vercel (One-Click Ready)
-This repository includes [vercel.json](./vercel.json) and a serverless Express entrypoint ([api/index.ts](./api/index.ts)) pinned to Node `22.x`:
-1. Import the GitHub repository into **Vercel** (Framework Preset: `Vite`, auto-configured via `vercel.json`).
-2. *(Optional)* Add `GEMINI_API_KEY` under **Project Settings → Environment Variables** for live Google Gemini responses (without it, the built-in Local Domain Engine runs automatically).
-3. Deploy — Vercel serves the React SPA from `dist/client` and routes all `/api/*` requests to `api/index.ts`.
+### 5. Deploy on Vercel
+Includes [vercel.json](./vercel.json) and serverless Express entrypoint [api/index.ts](./api/index.ts) (Node `22.x`):
+1. Import the GitHub repo into **Vercel** (`Framework: Vite`, auto-configured via `vercel.json`).
+2. *(Optional)* Add `GEMINI_API_KEY` in **Project Settings → Environment Variables**.
+3. Deploy — Vercel serves the SPA from `dist/client`, routes `/api/*` to `api/index.ts`, and uses serverless-safe SSE auto-retry (`retry: 45000`).
 
 ### 6. Secure Docker Deployment
 ```bash
@@ -116,60 +118,48 @@ docker run -p 8080:8080 \
 
 ---
 
-## 🔌 REST & Live Streaming API Reference
+## 🔌 API Reference
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | `GET` | `/api/health` | Service readiness, active AI engine mode, and LRU cache telemetry |
 | `GET` | `/api/cities/presets` | Curated winter-smog hotspot cities |
 | `GET` | `/api/cities/search?q=<city>` | Validated global city geocoding lookup |
-| `GET` | `/api/air-quality?lat=&lon=&name=&country=` | Live AQI, weather, hyperlocal stations, safest window & inversion risk |
-| `GET` | `/api/air-quality/stream?lat=&lon=...` | Real-time **Server-Sent Events (SSE)** live update stream |
-| `POST` | `/api/advisor/plan` | Personalized GenAI action plan + direct health/community impact |
+| `GET` | `/api/air-quality?lat=&lon=&name=&country=` | Live AQI, weather, hyperlocal stations, safest 2h window & inversion risk |
+| `GET` | `/api/air-quality/stream?lat=&lon=...` | Real-time **Server-Sent Events (SSE)** stream |
+| `POST` | `/api/advisor/plan` | Personalized GenAI action plan + direct health & community impact |
 | `POST` | `/api/advisor/chat` | Context-grounded GenAI advisor chat with prompt-injection firewall |
 | `POST` | `/api/impact/simulate` | Quantitative household & community emissions/exposure simulator |
 
 ---
 
-## 🔐 Security & Efficiency Highlights
+## 🔐 Security Highlights
 
-- **Defense-in-Depth Security** (full threat model in [SECURITY.md](./SECURITY.md)):
-  - Helmet strict CSP (`default-src 'self'`, `script-src 'self'`, `object-src 'none'`, `frame-ancestors 'none'`), `Permissions-Policy`, `X-Powered-By` stripped.
-  - Strict `ALLOWED_ORIGINS` CORS allowlist (`403` on untrusted origins).
-  - Zod schema validation on all inputs **and** GenAI JSON outputs, ASCII control-character sanitization, `16kb` JSON payload cap (`413`), and memory-bounded sliding-window rate limiting (`429` + `Retry-After`).
-  - Prompt-injection detector & XML delimiter sandboxing (`<user_question>`, `<user_focus_note>`), SSRF host allowlist with timeouts, server-side-only API key handling (`x-goog-api-key` header), and non-root multi-stage `Dockerfile`.
-- **Resource Efficiency**:
-  - Bounded **LRU + TTL caching** with **in-flight request coalescing** eliminates duplicate upstream requests and cuts GenAI token spend.
-  - Coordinate grid rounding (`~1.1 km`), gzip response compression, and zero heavy charting/mapping library bloat (`~90 kB` gzipped client JS total).
+Full threat model in [SECURITY.md](./SECURITY.md):
+- **HTTP Hardening:** Helmet strict CSP (`default-src 'self'`, `script-src 'self'`, `object-src 'none'`, `frame-ancestors 'none'`), `Permissions-Policy`, `X-Powered-By` disabled, sanitized `X-Request-Id` correlation headers.
+- **CORS & DoS Controls:** Strict `ALLOWED_ORIGINS` allowlist with typed `CorsOriginError` (`403`), `16kb` JSON payload cap (`413`), and memory-bounded sliding-window rate limiting (`429` + `Retry-After`).
+- **GenAI Guardrails:** Server-side API key isolation (`x-goog-api-key` header), prompt-injection screening (`server/ai/promptGuard.ts`), XML delimiter sandboxing on user & location fields (`server/ai/prompts.ts`), strict Zod output schema verification (`server/ai/schemas.ts`), bounded retry + timeout, and deterministic local fallback.
+- **SSRF & Container Security:** Hardcoded trusted HTTPS origins (`server/config/constants.ts`), 0 `npm audit` vulnerabilities, and non-root multi-stage `Dockerfile`.
 
 ---
 
-## ♿ Accessibility & Inclusive Design
+## ♿ Accessibility & Inclusive Design (WCAG 2.2 AA)
 
-- **WCAG 2.1 AA** compliant layout with skip-to-main-content link, semantic HTML5 landmarks, and high-visibility `:focus-visible` outlines.
-- **Dark**, **Light**, and **High-Contrast** theme toggles plus `prefers-reduced-motion` animation suppression.
-- Color-blind safe AQI indicators (always paired with explicit text labels, icons, and numeric ranges) and an **expandable accessible HTML data table** backing the 24-hour SVG forecast chart.
+- **Keyboard Navigation:** Skip-to-main-content link, WAI-ARIA roving-tabindex `tablist` (`ArrowLeft`/`ArrowRight`/`Home`/`End`), and full keyboard WAI-ARIA `combobox`/`listbox` (`ArrowDown`/`ArrowUp`/`Enter`/`Escape`, `aria-activedescendant`, `role="option"`).
+- **WCAG 2.2 AA Criteria:** Minimum `28×28px` / `32px` interactive target sizes (SC 2.5.8), `scroll-padding-top: 120px` so sticky headers never obscure focused elements (SC 2.4.11), and visible `:focus-visible` outlines.
+- **Inclusive Visuals & Screen Readers:** Dark, Light, and **High-Contrast** theme modes, `prefers-reduced-motion` support, color-blind safe AQI badges (color + text + numeric range + icons), dedicated `sr-only` polite live announcements for async AI plans, and an expandable HTML data table backing the 24-hour SVG forecast chart.
 
 ---
 
 ## 🧪 Testing & Verification
 
 ```bash
-npm run typecheck   # Strict TypeScript checks (client + server + shared)
-npm run lint        # ESLint + typescript-eslint + react-hooks + jsx-a11y
-npm test            # 28 automated Vitest tests (domain, security, SSE, ErrorBoundary, a11y)
-npm run build       # Production Vite bundle + NodeNext server compilation
+npm run typecheck      # Strict TypeScript checks (api + client + server + shared)
+npm run lint           # ESLint + typescript-eslint + react-hooks + jsx-a11y (0 warnings)
+npm test               # 40 automated Vitest tests across 5 suites
+npm run test:coverage  # V8 coverage report (91.4% stmts / 92.4% funcs / 92.8% lines)
+npm audit              # Dependency vulnerability audit (0 vulnerabilities)
+npm run build          # Production Vite bundle + NodeNext server compile
 ```
 
----
-
-## 🏆 Evaluation Focus Matrix
-
-| Focus Area | Tier | Verification Status |
-| --- | --- | --- |
-| **Problem Statement Alignment** | High Impact | Live winter smog intelligence, safest window, DIY/HEPA IAQ hacks, low-emission routines, sustainable swaps, direct health & community impact explainer |
-| **Code Quality** | High Impact | Strict TypeScript (`noUncheckedIndexedAccess`), modular layered architecture, 0 ESLint/a11y warnings |
-| **Security** | High Impact | Helmet CSP, CORS allowlist, Zod I/O schemas, prompt-injection guard, rate limiting, SSRF allowlist, non-root Docker |
-| **Efficiency** | High Impact | LRU+TTL cache with request coalescing, compression, pure-SVG charts & map (`~90 kB` gzipped JS) |
-| **Testing** | Medium Impact | 28/28 Vitest unit, integration, security, SSE, ErrorBoundary & React a11y tests passing |
-| **Accessibility** | Medium Impact | WCAG 2.1 AA landmarks, keyboard tabs, High-Contrast mode, screen-reader live regions & forecast data table |
+Continuous integration is defined in [.github/workflows/ci.yml](./.github/workflows/ci.yml) running dependency audit, strict typecheck, ESLint + a11y lint, Vitest coverage, and production/Vercel builds on every push and pull request.
