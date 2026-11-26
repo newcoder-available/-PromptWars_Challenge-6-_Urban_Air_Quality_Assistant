@@ -1,6 +1,8 @@
+import { getServerConfig } from '../config/env.js';
+
 /**
  * Lightweight structured JSON logger for server observability.
- * Automatically suppresses verbose output during unit tests and never logs raw secrets.
+ * Suppresses verbose output during test runs and never logs raw secrets.
  */
 type LogLevel = 'info' | 'warn' | 'error';
 
@@ -12,7 +14,7 @@ interface LogRecord {
 }
 
 function emit(level: LogLevel, message: string, context?: Record<string, unknown>): void {
-  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+  if (getServerConfig().isTest) {
     return;
   }
 

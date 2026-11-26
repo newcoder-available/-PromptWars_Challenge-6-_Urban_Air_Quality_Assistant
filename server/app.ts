@@ -4,9 +4,12 @@ import compression from 'compression';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
+import { NETWORK_LIMITS } from './config/constants.js';
+import { getServerConfig } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requestIdMiddleware } from './middleware/requestId.js';
 import { createApiRouter, type ApiRouterOptions } from './routes/api.js';
+import { CorsOriginError } from './utils/errors.js';
 
 export interface AppConfig {
   allowedOrigins?: string[];
@@ -14,41 +17,7 @@ export interface AppConfig {
   serveStatic?: boolean;
 }
 
-function resolveAllowedOrigins(override?: string[]): Set<string> {
-  if (override && override.length > 0) {
-    return new Set(override);
-  }
-  const envOrigins = (
-    process.env.ALLOWED_ORIGINS ??
-    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001'
-  )
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-
-  // Automatically trust Vercel preview and production deployment URLs
-  for (const vercelHost of [
-    process.env.VERCEL_URL,
-    process.env.VERCEL_BRANCH_URL,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
-  ]) {
-    if (vercelHost) {
-      envOrigins.push(`https://${vercelHost.replace(/^https?:\/\//, '')}`);
-    }
-  }
-
-  return new Set(envOrigins);
-}
-
-export function createApp(config: AppConfig = {}): Express {
-  const app = express();
-
-  // Hide Express fingerprint & attach correlation ID
-  app.disable('x-powered-by');
-  app.set('trust proxy', 1);
-  app.use(requestIdMiddleware);
-
-  // Strict security headers including Content-Security-Policy
+function configureSecurityHeaders(app: Express): void {
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -71,7 +40,6 @@ export function createApp(config: AppConfig = {}): Express {
     }),
   );
 
-  // Restrict powerful browser APIs not needed by this app
   app.use((_req, res, next) => {
     res.setHeader(
       'Permissions-Policy',
@@ -79,37 +47,73 @@ export function createApp(config: AppConfig = {}): Express {
     );
     next();
   });
+}
 
-  // Strict CORS allowlist
-  const allowedOrigins = resolveAllowedOrigins(config.allowedOrigins);
+function configureCors(app: Express, allowedOrigins: Set<string>): void {
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow same-origin / server-to-server / curl requests without Origin header
-        if (!origin) {
+        if (!origin || allowedOrigins.has(origin)) {
           callback(null, true);
           return;
         }
-        if (allowedOrigins.has(origin)) {
-          callback(null, true);
-          return;
-        }
-        callback(new Error('CORS_ORIGIN_DENIED'));
+        callback(new CorsOriginError());
       },
       methods: ['GET', 'POST', 'OPTIONS'],
-      allowedHeaders: ['Content-Type'],
+      allowedHeaders: ['Content-Type', 'X-Request-Id'],
+      exposedHeaders: ['X-Request-Id', 'RateLimit-Limit', 'RateLimit-Remaining', 'Retry-After'],
       maxAge: 600,
     }),
   );
+}
 
-  // Response compression & strict JSON body size limit
+function configureStaticClient(app: Express, shouldServe: boolean): void {
+  const clientDistDir = path.resolve(process.cwd(), 'dist', 'client');
+  if (!shouldServe || !fs.existsSync(clientDistDir)) {
+    return;
+  }
+
+  app.use(
+    express.static(clientDistDir, {
+      maxAge: '7d',
+      etag: true,
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('index.html')) {
+          res.setHeader('Cache-Control', 'no-cache');
+        }
+      },
+    }),
+  );
+
+  app.get('/{*splat}', (_req, res) => {
+    res.sendFile(path.join(clientDistDir, 'index.html'));
+  });
+}
+
+/**
+ * Creates a configured Express application with defense-in-depth security headers,
+ * strict CORS allowlisting, compression, API routing, and optional static SPA hosting.
+ */
+export function createApp(config: AppConfig = {}): Express {
+  const env = getServerConfig();
+  const app = express();
+
+  app.disable('x-powered-by');
+  app.set('trust proxy', 1);
+  app.use(requestIdMiddleware);
+
+  configureSecurityHeaders(app);
+
+  const origins =
+    config.allowedOrigins && config.allowedOrigins.length > 0
+      ? config.allowedOrigins
+      : env.allowedOrigins;
+  configureCors(app, new Set(origins));
+
   app.use(compression());
-  app.use(express.json({ limit: '16kb', strict: true }));
+  app.use(express.json({ limit: NETWORK_LIMITS.jsonBodyLimit, strict: true }));
 
-  // Mount API routes
   app.use('/api', createApiRouter(config.apiOptions));
-
-  // Unmatched API routes return clean JSON 404
   app.use('/api', (_req, res) => {
     res.status(404).json({
       error: 'not_found',
@@ -117,31 +121,8 @@ export function createApp(config: AppConfig = {}): Express {
     });
   });
 
-  // Serve compiled Vite client bundle in self-hosted production (Vercel CDN serves static files directly)
-  const clientDistDir = path.resolve(process.cwd(), 'dist', 'client');
-  const shouldServeStatic =
-    config.serveStatic ??
-    (process.env.NODE_ENV === 'production' &&
-      process.env.VERCEL !== '1' &&
-      fs.existsSync(clientDistDir));
-
-  if (shouldServeStatic && fs.existsSync(clientDistDir)) {
-    app.use(
-      express.static(clientDistDir, {
-        maxAge: '7d',
-        etag: true,
-        setHeaders: (res, filePath) => {
-          if (filePath.endsWith('index.html')) {
-            res.setHeader('Cache-Control', 'no-cache');
-          }
-        },
-      }),
-    );
-
-    app.get('/{*splat}', (_req, res) => {
-      res.sendFile(path.join(clientDistDir, 'index.html'));
-    });
-  }
+  const shouldServeStatic = config.serveStatic ?? (env.isProduction && !env.isVercel);
+  configureStaticClient(app, shouldServeStatic);
 
   app.use(errorHandler);
   return app;

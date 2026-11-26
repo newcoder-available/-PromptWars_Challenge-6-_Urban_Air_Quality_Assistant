@@ -72,6 +72,29 @@ export const AQI_BANDS: readonly AqiBandMeta[] = [
   },
 ] as const;
 
+/** Scientific & public-health reference constants used across UI and backend math. */
+export const AIR_QUALITY_CONSTANTS = {
+  /** WHO 2021 24-hour mean PM2.5 guideline (µg/m³). */
+  whoPm25Guideline24h: 15,
+  /** Berkeley Earth rule-of-thumb: ~22 µg/m³ ambient PM2.5 ≈ 1 cigarette/day. */
+  pm25PerCigaretteUgm3: 22,
+  /** Typical indoor PM2.5 infiltration ratio during winter smog without filtration. */
+  indoorInfiltrationFactor: 0.65,
+  /** Conservative ceiling on combined multiplicative exposure reduction (%). */
+  maxCombinedExposureReductionPct: 88,
+  /** Per-action cap on single-habit fractional exposure reduction. */
+  maxSingleActionReductionFraction: 0.75,
+  /** Minimum modeled indoor PM2.5 floor (µg/m³). */
+  minIndoorPm25Floor: 4,
+  /** Average monthly CO₂ absorption of one mature urban tree (kg/month). */
+  co2KgPerTreePerMonth: 1.8,
+  /** Days per calendar month used for monthly impact projections. */
+  daysPerMonth: 30,
+} as const;
+
+/**
+ * Classifies a numeric US EPA AQI score into its corresponding severity band and guidance metadata.
+ */
 export function classifyAqi(usAqi: number): AqiBandMeta {
   const clamped = Math.max(0, Math.round(usAqi));
   for (const band of AQI_BANDS) {

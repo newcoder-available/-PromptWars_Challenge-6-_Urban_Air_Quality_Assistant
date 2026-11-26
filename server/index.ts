@@ -1,17 +1,17 @@
 import 'dotenv/config';
 import { createApp } from './app.js';
+import { NETWORK_LIMITS } from './config/constants.js';
+import { getServerConfig } from './config/env.js';
 import { logger } from './utils/logger.js';
 
-const rawPort = Number(process.env.PORT ?? 3001);
-const port = Number.isInteger(rawPort) && rawPort > 0 && rawPort < 65536 ? rawPort : 3001;
-
+const config = getServerConfig();
 const app = createApp();
-const server = app.listen(port, () => {
-  const aiMode =
-    process.env.GEMINI_API_KEY?.trim() && process.env.OFFLINE_MODE !== 'true'
-      ? 'gemini-genai'
-      : 'local-intelligence';
-  logger.info('AirShield AI API listening', { port, aiMode });
+
+const server = app.listen(config.port, () => {
+  logger.info('AirShield AI API listening', {
+    port: config.port,
+    aiMode: config.geminiEnabled ? 'gemini-genai' : 'local-intelligence',
+  });
 });
 
 function shutdown(signal: string): void {
@@ -19,7 +19,7 @@ function shutdown(signal: string): void {
   server.close(() => {
     process.exit(0);
   });
-  setTimeout(() => process.exit(1), 5000).unref();
+  setTimeout(() => process.exit(1), NETWORK_LIMITS.shutdownGraceMs).unref();
 }
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));

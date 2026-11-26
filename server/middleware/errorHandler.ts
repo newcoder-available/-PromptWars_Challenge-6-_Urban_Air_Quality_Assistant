@@ -1,10 +1,30 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError } from 'zod';
+import { AppError } from '../utils/errors.js';
 import { logger } from '../utils/logger.js';
 
+function isBodyTooLargeError(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'type' in err &&
+    (err as { type?: string }).type === 'entity.too.large'
+  );
+}
+
+function isMalformedJsonError(err: unknown): boolean {
+  return (
+    err instanceof SyntaxError &&
+    typeof err === 'object' &&
+    err !== null &&
+    'status' in err &&
+    (err as { status?: number }).status === 400
+  );
+}
+
 /**
- * Centralized error handler that returns clean, client-safe JSON errors
- * without leaking stack traces, filesystem paths, or internal details.
+ * Centralized Express error handler returning client-safe JSON errors
+ * without leaking stack traces, filesystem paths, or internal environment state.
  */
 export function errorHandler(
   err: unknown,
@@ -27,12 +47,16 @@ export function errorHandler(
     return;
   }
 
-  if (
-    typeof err === 'object' &&
-    err !== null &&
-    'type' in err &&
-    (err as { type?: string }).type === 'entity.too.large'
-  ) {
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      error: err.code,
+      message: err.message,
+      requestId,
+    });
+    return;
+  }
+
+  if (isBodyTooLargeError(err)) {
     res.status(413).json({
       error: 'payload_too_large',
       message: 'Request body exceeds the allowed 16 KB limit.',
@@ -41,25 +65,10 @@ export function errorHandler(
     return;
   }
 
-  if (
-    err instanceof SyntaxError &&
-    typeof err === 'object' &&
-    err !== null &&
-    'status' in err &&
-    (err as { status?: number }).status === 400
-  ) {
+  if (isMalformedJsonError(err)) {
     res.status(400).json({
       error: 'invalid_json',
       message: 'Malformed JSON request body.',
-      requestId,
-    });
-    return;
-  }
-
-  if (err instanceof Error && err.message === 'CORS_ORIGIN_DENIED') {
-    res.status(403).json({
-      error: 'cors_forbidden',
-      message: 'Origin is not permitted to access this API.',
       requestId,
     });
     return;
