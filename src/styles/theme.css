@@ -127,6 +127,7 @@ html {
   color: var(--text-primary);
   background: var(--bg-page);
   scroll-behavior: smooth;
+  scroll-padding-top: 120px;
 }
 
 body {
@@ -410,6 +411,7 @@ body {
 .btn-sm {
   padding: 0.38rem 0.72rem;
   font-size: 0.82rem;
+  min-height: 32px;
 }
 
 .input,
@@ -489,8 +491,11 @@ body {
   font-size: 0.9rem;
 }
 
-.search-option:hover {
+.search-option:hover,
+.search-option-active {
   background: var(--bg-subtle);
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
 }
 
 .chip-row {
@@ -502,6 +507,7 @@ body {
 
 .chip {
   padding: 0.35rem 0.72rem;
+  min-height: 32px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--bg-elevated);
@@ -1494,10 +1500,12 @@ body {
   background: transparent;
   color: #ffffff;
   cursor: pointer;
-  padding: 0.15rem;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0.25rem;
   display: grid;
   place-items: center;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .aqi-map-pins {

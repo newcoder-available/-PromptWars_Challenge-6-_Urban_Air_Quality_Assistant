@@ -1,3 +1,4 @@
+import { useRef, type KeyboardEvent } from 'react';
 import {
   Calculator,
   Contrast,
@@ -50,7 +51,7 @@ interface AppHeaderProps {
 
 /**
  * Application sticky header containing brand identity, active AI engine indicator,
- * theme/contrast accessibility controls, and primary workspace navigation tabs.
+ * theme/contrast accessibility controls, and WAI-ARIA roving-tabindex navigation tabs.
  */
 export function AppHeader({
   activeTab,
@@ -61,6 +62,31 @@ export function AppHeader({
   onToggleTheme,
   onToggleHighContrast,
 }: AppHeaderProps) {
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, currentIndex: number): void {
+    const count = WORKSPACE_TABS.length;
+    let nextIndex: number | null = null;
+
+    if (event.key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % count;
+    } else if (event.key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + count) % count;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = count - 1;
+    }
+
+    if (nextIndex === null) return;
+    event.preventDefault();
+    const targetTab = WORKSPACE_TABS[nextIndex];
+    if (targetTab) {
+      onSelectTab(targetTab.id);
+      tabRefs.current[nextIndex]?.focus();
+    }
+  }
+
   return (
     <header className="app-header">
       <div className="header-inner">
@@ -110,19 +136,24 @@ export function AppHeader({
 
       <nav className="nav-bar" aria-label="Primary sections">
         <div className="nav-inner" role="tablist" aria-label="AirShield workspaces">
-          {WORKSPACE_TABS.map((tab) => {
+          {WORKSPACE_TABS.map((tab, index) => {
             const Icon = tab.icon;
             const isSelected = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
                 type="button"
                 role="tab"
                 id={`tab-${tab.id}`}
+                tabIndex={isSelected ? 0 : -1}
                 aria-selected={isSelected}
                 aria-controls={tab.panelId}
                 className="nav-tab"
                 onClick={() => onSelectTab(tab.id)}
+                onKeyDown={(e) => handleTabKeyDown(e, index)}
               >
                 <Icon size={16} aria-hidden="true" />
                 {tab.label}
