@@ -6,7 +6,7 @@ import {
   buildLocalChatResponse,
   detectPromptInjection,
 } from '../server/services/aiAdvisorService.js';
-import { escapePromptTagContent } from '../server/services/advisor/promptGuard.js';
+import { escapePromptTagContent } from '../server/ai/promptGuard.js';
 import {
   assessInversionRisk,
   buildFallbackAirQualityReport,
