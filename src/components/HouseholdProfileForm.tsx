@@ -27,6 +27,10 @@ const VULNERABLE_OPTIONS: ReadonlyArray<{ value: VulnerableGroup; label: string 
   { value: 'outdoor_workers', label: 'Outdoor Worker' },
 ];
 
+/**
+ * Interactive household and community lifestyle profiler used to personalize
+ * daily low-emission routines, indoor air quality hacks, and smog advisories.
+ */
 export function HouseholdProfileForm({
   profile,
   focusNote,

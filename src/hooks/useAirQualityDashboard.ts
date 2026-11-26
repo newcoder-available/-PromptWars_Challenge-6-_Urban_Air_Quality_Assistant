@@ -11,8 +11,8 @@ import {
   fetchHealth,
   generateActionPlanApi,
 } from '../lib/apiClient.js';
-
-const FAVORITES_STORAGE_KEY = 'airshield:favorite-cities:v1';
+import { useFavoriteCities } from './useFavoriteCities.js';
+import { useLiveAirQualityStream } from './useLiveAirQualityStream.js';
 
 const DEFAULT_CITY: CityLocation = PRESET_CITIES[0] ?? {
   name: 'New Delhi',
@@ -21,23 +21,9 @@ const DEFAULT_CITY: CityLocation = PRESET_CITIES[0] ?? {
   longitude: 77.209,
 };
 
-function loadSavedFavorites(): string[] {
-  try {
-    const raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
-    if (!raw) return [DEFAULT_CITY.name];
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.filter((item): item is string => typeof item === 'string')
-      : [DEFAULT_CITY.name];
-  } catch {
-    return [DEFAULT_CITY.name];
-  }
-}
-
 /**
- * Central state & real-time data hook for the AirShield AI dashboard.
- * Encapsulates live SSE streaming, manual refreshes, AI action plan generation,
- * browser geolocation, and favorite city persistence.
+ * Orchestrates live air quality state, AI action plan generation, city selection,
+ * browser geolocation, favorite persistence, and SSE stream subscriptions.
  */
 export function useAirQualityDashboard() {
   const [selectedCity, setSelectedCity] = useState<CityLocation>(DEFAULT_CITY);
@@ -52,44 +38,57 @@ export function useAirQualityDashboard() {
   const [aiMode, setAiMode] = useState<'gemini-genai' | 'local-intelligence'>(
     'local-intelligence',
   );
-
   const [liveEnabled, setLiveEnabled] = useState(true);
-  const [secondsSinceSync, setSecondsSinceSync] = useState(0);
-  const [favoriteCities, setFavoriteCities] = useState<string[]>(loadSavedFavorites);
 
-  const initialCityRef = useRef(DEFAULT_CITY);
-  const initialProfileRef = useRef(DEFAULT_HOUSEHOLD_PROFILE);
+  const { isFavoriteCity, toggleFavoriteCity } = useFavoriteCities(DEFAULT_CITY.name);
+
+  const handleLiveReport = useCallback((liveReport: AirQualityReport) => {
+    setReport(liveReport);
+    setLoadingAqi(false);
+  }, []);
+
+  const { secondsSinceSync, resetSyncClock } = useLiveAirQualityStream({
+    city: selectedCity,
+    enabled: liveEnabled,
+    onReport: handleLiveReport,
+  });
+
+  const resetSyncRef = useRef(resetSyncClock);
+  useEffect(() => {
+    resetSyncRef.current = resetSyncClock;
+  }, [resetSyncClock]);
+
+  const fetchCityBundle = useCallback(
+    async (city: CityLocation, currentProfile: HouseholdProfile, note: string) => {
+      const [aqReport, actionPlan] = await Promise.all([
+        fetchAirQualityApi(city),
+        generateActionPlanApi({
+          location: city,
+          profile: currentProfile,
+          focusNote: note.trim() || undefined,
+        }),
+      ]);
+      return { aqReport, actionPlan };
+    },
+    [],
+  );
 
   useEffect(() => {
     fetchHealth()
       .then((health) => setAiMode(health.aiMode))
       .catch(() => {
-        // Default local-intelligence badge remains active if health check is unavailable
+        // Retain default engine badge if health endpoint is unavailable
       });
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsSinceSync((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Initial dashboard bootstrap
-  useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      fetchAirQualityApi(initialCityRef.current),
-      generateActionPlanApi({
-        location: initialCityRef.current,
-        profile: initialProfileRef.current,
-      }),
-    ])
-      .then(([aqReport, actionPlan]) => {
+    fetchCityBundle(DEFAULT_CITY, DEFAULT_HOUSEHOLD_PROFILE, '')
+      .then(({ aqReport, actionPlan }) => {
         if (cancelled) return;
         setErrorMessage(null);
         setReport(aqReport);
-        setSecondsSinceSync(0);
+        resetSyncRef.current();
         setPlan(actionPlan);
         setAiMode(actionPlan.engine);
       })
@@ -108,77 +107,33 @@ export function useAirQualityDashboard() {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  // Real-time Server-Sent Events subscription for live AQI & weather updates
-  useEffect(() => {
-    if (!liveEnabled || typeof EventSource === 'undefined') {
-      return;
-    }
-
-    const params = new URLSearchParams({
-      lat: String(selectedCity.latitude),
-      lon: String(selectedCity.longitude),
-      name: selectedCity.name,
-      country: selectedCity.country,
-    });
-    const stream = new EventSource(`/api/air-quality/stream?${params.toString()}`);
-
-    const onAirQuality = (event: MessageEvent<string>) => {
-      try {
-        const liveReport = JSON.parse(event.data) as AirQualityReport;
-        setReport(liveReport);
-        setSecondsSinceSync(0);
-        setLoadingAqi(false);
-      } catch {
-        // Ignore malformed SSE payload
-      }
-    };
-
-    stream.addEventListener('air-quality', onAirQuality as EventListener);
-    return () => {
-      stream.removeEventListener('air-quality', onAirQuality as EventListener);
-      stream.close();
-    };
-  }, [liveEnabled, selectedCity]);
-
-  const loadCityBundle = useCallback(
-    async (city: CityLocation, currentProfile: HouseholdProfile, note: string) => {
-      setErrorMessage(null);
-      setLoadingAqi(true);
-      setLoadingPlan(true);
-
-      try {
-        const [aqReport, actionPlan] = await Promise.all([
-          fetchAirQualityApi(city),
-          generateActionPlanApi({
-            location: city,
-            profile: currentProfile,
-            focusNote: note.trim() || undefined,
-          }),
-        ]);
-        setReport(aqReport);
-        setSecondsSinceSync(0);
-        setPlan(actionPlan);
-        setAiMode(actionPlan.engine);
-      } catch (err) {
-        setErrorMessage(
-          err instanceof Error ? err.message : 'Unable to load air quality intelligence.',
-        );
-      } finally {
-        setLoadingAqi(false);
-        setLoadingPlan(false);
-      }
-    },
-    [],
-  );
+  }, [fetchCityBundle]);
 
   const selectCity = useCallback(
     (city: CityLocation) => {
       setSelectedCity(city);
-      void loadCityBundle(city, profile, focusNote);
+      setErrorMessage(null);
+      setLoadingAqi(true);
+      setLoadingPlan(true);
+
+      void fetchCityBundle(city, profile, focusNote)
+        .then(({ aqReport, actionPlan }) => {
+          setReport(aqReport);
+          resetSyncRef.current();
+          setPlan(actionPlan);
+          setAiMode(actionPlan.engine);
+        })
+        .catch((err: unknown) => {
+          setErrorMessage(
+            err instanceof Error ? err.message : 'Unable to load air quality intelligence.',
+          );
+        })
+        .finally(() => {
+          setLoadingAqi(false);
+          setLoadingPlan(false);
+        });
     },
-    [focusNote, loadCityBundle, profile],
+    [fetchCityBundle, focusNote, profile],
   );
 
   const locateMe = useCallback(() => {
@@ -202,28 +157,13 @@ export function useAirQualityDashboard() {
     );
   }, [selectCity]);
 
-  const toggleFavorite = useCallback(() => {
-    setFavoriteCities((prev) => {
-      const exists = prev.includes(selectedCity.name);
-      const next = exists
-        ? prev.filter((name) => name !== selectedCity.name)
-        : [...prev, selectedCity.name];
-      try {
-        window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Ignore storage quota errors
-      }
-      return next;
-    });
-  }, [selectedCity.name]);
-
   const refreshAqi = useCallback(async () => {
     setLoadingAqi(true);
     setErrorMessage(null);
     try {
       const aqReport = await fetchAirQualityApi(selectedCity);
       setReport(aqReport);
-      setSecondsSinceSync(0);
+      resetSyncRef.current();
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : 'Unable to refresh air quality.');
     } finally {
@@ -261,12 +201,12 @@ export function useAirQualityDashboard() {
     aiMode,
     liveEnabled,
     secondsSinceSync,
-    isFavorite: favoriteCities.includes(selectedCity.name),
+    isFavorite: isFavoriteCity(selectedCity.name),
     setProfile,
     setFocusNote,
     selectCity,
     locateMe,
-    toggleFavorite,
+    toggleFavorite: () => toggleFavoriteCity(selectedCity.name),
     toggleLive: () => setLiveEnabled((prev) => !prev),
     refreshAqi,
     regeneratePlan,

@@ -15,6 +15,10 @@ const ZONE_LABELS: Record<NearbyStationReading['zoneType'], string> = {
   school_zone: 'School Corridor',
 };
 
+/**
+ * Interactive pure-SVG hyperlocal station map showing neighborhood micro-environments
+ * and highlighting the cleanest nearby zone.
+ */
 export function HyperlocalAqiMap({ cityName, stations }: HyperlocalAqiMapProps) {
   const [selectedId, setSelectedId] = useState<string>(stations[0]?.id ?? 'central');
   const [expanded, setExpanded] = useState(false);

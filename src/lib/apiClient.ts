@@ -8,25 +8,46 @@ import type {
   ImpactSimulationResult,
 } from '../../shared/types.js';
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 12_000;
+
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
 
-  const payload = (await response.json().catch(() => ({}))) as {
-    message?: string;
-    error?: string;
-  };
-
-  if (!response.ok) {
-    throw new Error(payload.message ?? `Request failed (${response.status})`);
+  const callerSignal = init?.signal;
+  const onCallerAbort = () => controller.abort();
+  if (callerSignal) {
+    if (callerSignal.aborted) {
+      controller.abort();
+    } else {
+      callerSignal.addEventListener('abort', onCallerAbort, { once: true });
+    }
   }
 
-  return payload as T;
+  try {
+    const response = await fetch(url, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init?.headers ?? {}),
+      },
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as {
+      message?: string;
+      error?: string;
+    };
+
+    if (!response.ok) {
+      throw new Error(payload.message ?? `Request failed (${response.status})`);
+    }
+
+    return payload as T;
+  } finally {
+    clearTimeout(timeout);
+    callerSignal?.removeEventListener('abort', onCallerAbort);
+  }
 }
 
 export interface HealthStatus {
@@ -34,17 +55,23 @@ export interface HealthStatus {
   aiMode: 'gemini-genai' | 'local-intelligence';
 }
 
+/** Fetches backend health status and active AI engine mode. */
 export function fetchHealth(): Promise<HealthStatus> {
   return requestJson<HealthStatus>('/api/health');
 }
 
-export function searchCitiesApi(query: string, signal?: AbortSignal): Promise<{ cities: CityLocation[] }> {
+/** Searches global cities matching `query` via the geocoding endpoint. */
+export function searchCitiesApi(
+  query: string,
+  signal?: AbortSignal,
+): Promise<{ cities: CityLocation[] }> {
   const params = new URLSearchParams({ q: query });
   return requestJson<{ cities: CityLocation[] }>(`/api/cities/search?${params.toString()}`, {
     signal,
   });
 }
 
+/** Fetches live air quality, weather, nearby stations, and 24-hour forecast for `location`. */
 export function fetchAirQualityApi(location: CityLocation): Promise<AirQualityReport> {
   const params = new URLSearchParams({
     lat: String(location.latitude),
@@ -55,6 +82,7 @@ export function fetchAirQualityApi(location: CityLocation): Promise<AirQualityRe
   return requestJson<AirQualityReport>(`/api/air-quality?${params.toString()}`);
 }
 
+/** Generates a tailored winter-smog action plan for the given location and household profile. */
 export function generateActionPlanApi(params: {
   location: CityLocation;
   profile: HouseholdProfile;
@@ -66,6 +94,7 @@ export function generateActionPlanApi(params: {
   });
 }
 
+/** Sends a question and recent turns to the context-grounded AirShield AI advisor. */
 export function sendAdvisorChatApi(params: {
   location: CityLocation;
   profile: HouseholdProfile;
@@ -78,6 +107,7 @@ export function sendAdvisorChatApi(params: {
   });
 }
 
+/** Computes household exposure reduction and neighborhood-scale emissions savings. */
 export function simulateImpactApi(params: {
   selectedActionIds: string[];
   baselinePm25: number;

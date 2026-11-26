@@ -1,43 +1,21 @@
 import { useState } from 'react';
-import {
-  AlertCircle,
-  Check,
-  Clock,
-  Copy,
-  HeartPulse,
-  Home,
-  Leaf,
-  Printer,
-  Share2,
-  Sparkles,
-  Users,
-} from 'lucide-react';
+import { AlertCircle, Check, Copy, Printer, Share2, Sparkles } from 'lucide-react';
 import type { ActionPlanResponse, RecommendationCategory } from '../../shared/types.js';
+import { useCopyToClipboard } from '../hooks/useCopyToClipboard.js';
+import { CATEGORY_META, RecommendationCard } from './RecommendationCard.js';
 
 interface ActionPlanViewProps {
   plan: ActionPlanResponse | null;
   loading: boolean;
 }
 
-const CATEGORY_META: Record<
-  RecommendationCategory,
-  { label: string; icon: typeof Leaf }
-> = {
-  low_emission_routine: { label: 'Low-Emission Routine', icon: Clock },
-  indoor_air_hack: { label: 'Indoor Air Hack', icon: Home },
-  sustainable_alternative: { label: 'Sustainable Swap', icon: Leaf },
-  community_action: { label: 'Community Action', icon: Users },
-};
-
-const EFFORT_LABELS = {
-  quick_win: 'Quick Win',
-  daily_habit: 'Daily Habit',
-  lifestyle_shift: 'High-Impact Shift',
-} as const;
-
+/**
+ * Displays the personalized GenAI winter-smog action plan with category filtering,
+ * priority air advisories, direct-impact cards, and a copyable/printable community brief.
+ */
 export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
   const [filter, setFilter] = useState<'all' | RecommendationCategory>('all');
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
 
   if (loading && !plan) {
     return (
@@ -62,19 +40,14 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
       ? plan.recommendations
       : plan.recommendations.filter((item) => item.category === filter);
 
-  async function handleCopyTemplate(): Promise<void> {
-    if (!plan) return;
-    try {
-      await navigator.clipboard.writeText(plan.communityMessageTemplate);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      setCopied(false);
-    }
-  }
-
   return (
-    <section className="card" aria-labelledby="action-plan-heading" aria-live="polite">
+    <section className="card" aria-labelledby="action-plan-heading" aria-busy={loading}>
+      <p className="sr-only" role="status" aria-live="polite">
+        {loading
+          ? 'Updating personalized action plan...'
+          : `${plan.headline}. Showing ${filteredRecs.length} recommendations.`}
+      </p>
+
       <div className="card-header">
         <div>
           <h2 id="action-plan-heading" className="card-title">
@@ -149,61 +122,9 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
       </div>
 
       <div className="rec-grid">
-        {filteredRecs.map((rec) => {
-          const meta = CATEGORY_META[rec.category];
-          const Icon = meta.icon;
-          return (
-            <article key={rec.id} className="rec-card">
-              <div className="tag-row">
-                <span className="tag tag-brand">
-                  <Icon size={12} aria-hidden="true" />
-                  {meta.label}
-                </span>
-                <span className="tag">{EFFORT_LABELS[rec.effort]}</span>
-                <span className="tag">{rec.estimatedCost}</span>
-              </div>
-
-              <div>
-                <h3 className="rec-title">{rec.title}</h3>
-                <p className="rec-summary">{rec.summary}</p>
-              </div>
-
-              <div className="rec-timing">
-                <strong>Best timing:</strong> {rec.bestTimeWindow}
-              </div>
-
-              <ol className="steps-list">
-                {rec.steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-
-              <div className="impact-panel" aria-label={`Direct impact for ${rec.title}`}>
-                <div className="impact-kpis">
-                  <span className="impact-kpi">
-                    <HeartPulse size={12} aria-hidden="true" className="inline-icon-mid" /> -
-                    {rec.impact.pm25ExposureReductionPct}% PM2.5 Exposure
-                  </span>
-                  {rec.impact.weeklyCo2SavedKg > 0 && (
-                    <span className="impact-kpi">-{rec.impact.weeklyCo2SavedKg} kg CO₂/wk</span>
-                  )}
-                  {rec.impact.weeklyPm25AvoidedGrams > 0 && (
-                    <span className="impact-kpi">
-                      -{rec.impact.weeklyPm25AvoidedGrams} g PM2.5/wk
-                    </span>
-                  )}
-                </div>
-
-                <p className="impact-copy">
-                  <strong>Health impact:</strong> {rec.impact.personalHealthExplanation}
-                </p>
-                <p className="impact-copy">
-                  <strong>Community impact:</strong> {rec.impact.communityScaleExplanation}
-                </p>
-              </div>
-            </article>
-          );
-        })}
+        {filteredRecs.map((rec) => (
+          <RecommendationCard key={rec.id} recommendation={rec} />
+        ))}
       </div>
 
       <div className="community-brief-box">
@@ -212,7 +133,13 @@ export function ActionPlanView({ plan, loading }: ActionPlanViewProps) {
             <Share2 size={16} aria-hidden="true" />
             Shareable Neighborhood / School Smog Alert
           </h3>
-          <button type="button" className="btn btn-sm no-print" onClick={handleCopyTemplate}>
+          <button
+            type="button"
+            className="btn btn-sm no-print"
+            onClick={() => {
+              void copy(plan.communityMessageTemplate);
+            }}
+          >
             {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}
             {copied ? 'Copied!' : 'Copy Message'}
           </button>

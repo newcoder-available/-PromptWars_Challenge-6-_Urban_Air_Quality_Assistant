@@ -1,21 +1,9 @@
-import { useState } from 'react';
-import {
-  AlertTriangle,
-  Check,
-  Clock,
-  CloudFog,
-  Heart,
-  LocateFixed,
-  Pause,
-  Play,
-  RefreshCw,
-  Share2,
-  ShieldCheck,
-} from 'lucide-react';
+import { AlertTriangle, Clock, CloudFog, ShieldCheck } from 'lucide-react';
 import type { AirQualityReport } from '../../shared/types.js';
 import { AtmosphericHeroBanner } from './AtmosphericHeroBanner.js';
 import { ForecastChart } from './ForecastChart.js';
 import { HyperlocalAqiMap } from './HyperlocalAqiMap.js';
+import { LiveStatusHeader } from './LiveStatusHeader.js';
 
 interface AirQualityOverviewProps {
   report: AirQualityReport | null;
@@ -29,6 +17,10 @@ interface AirQualityOverviewProps {
   onToggleFavorite: () => void;
 }
 
+/**
+ * Primary live air quality showcase composing the live status header, atmospheric hero banner,
+ * hyperlocal station map, pollutant telemetry tiles, safest-window/inversion callouts, and 24h forecast chart.
+ */
 export function AirQualityOverview({
   report,
   loading,
@@ -40,8 +32,6 @@ export function AirQualityOverview({
   onLocateMe,
   onToggleFavorite,
 }: AirQualityOverviewProps) {
-  const [sharedCopied, setSharedCopied] = useState(false);
-
   if (loading && !report) {
     return (
       <section className="card" aria-busy="true" aria-live="polite">
@@ -57,123 +47,29 @@ export function AirQualityOverview({
     return null;
   }
 
-  const { current, location, weather, nearbyStations, safestWindow, inversionRisk, hourlyForecast } =
-    report;
-
-  const formattedLocalTime = new Date(report.fetchedAt).toLocaleString([], {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-  async function handleShareSnapshot(): Promise<void> {
-    const summary =
-      `${location.name} Live Air Quality: US AQI ${current.usAqi} (${current.label}) | ` +
-      `PM2.5: ${current.pm25} µg/m³ | PM10: ${current.pm10} µg/m³ | ` +
-      `${weather.temperatureC}°C ${weather.conditionLabel}, Wind ${weather.windSpeedKmh} km/h. ` +
-      `Safest 2h window: ${safestWindow.startLabel}–${safestWindow.endLabel} (via AirShield AI)`;
-    try {
-      await navigator.clipboard.writeText(summary);
-      setSharedCopied(true);
-      setTimeout(() => setSharedCopied(false), 2500);
-    } catch {
-      setSharedCopied(false);
-    }
-  }
+  const { current, location, nearbyStations, safestWindow, inversionRisk, hourlyForecast } = report;
+  const pollutantTiles = [
+    { label: 'PM2.5 Fine', value: `${current.pm25} µg/m³` },
+    { label: 'PM10 Coarse', value: `${current.pm10} µg/m³` },
+    { label: 'NO₂ Traffic', value: `${current.no2} µg/m³` },
+    { label: 'Ozone (O₃)', value: `${current.ozone} µg/m³` },
+    { label: 'CO', value: `${current.co} µg/m³` },
+    { label: 'Outdoor Parity', value: `~${current.cigaretteEquivalentPerDay} cig/day` },
+  ];
 
   return (
     <section className="atmospheric-section" aria-labelledby="aqi-overview-heading">
-      <div className="live-top-strip">
-        <div>
-          <div className="live-badges-row">
-            <span className={`live-pill ${liveEnabled ? 'is-live' : 'is-paused'}`}>
-              <span className="live-dot" aria-hidden="true" />
-              {liveEnabled ? 'LIVE' : 'PAUSED'}
-            </span>
-            <span className="live-sync-note" aria-live="polite">
-              Last Updated: <strong>{formattedLocalTime}</strong> (Local Time ·{' '}
-              {secondsSinceSync < 5 ? 'just now' : `${secondsSinceSync}s ago`})
-            </span>
-          </div>
-
-          <h2 id="aqi-overview-heading" className="hero-city-heading">
-            {location.name} Air Quality Index (AQI) | Air Pollution
-          </h2>
-          <p className="hero-city-sub">
-            Real-time PM2.5, PM10 &amp; winter smog dispersion intelligence in {location.name},{' '}
-            {location.country}
-          </p>
-        </div>
-
-        <div className="live-actions-group no-print">
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={onToggleLive}
-            aria-pressed={liveEnabled}
-            title={liveEnabled ? 'Pause automatic live updates' : 'Resume automatic live updates'}
-          >
-            {liveEnabled ? (
-              <Pause size={14} aria-hidden="true" />
-            ) : (
-              <Play size={14} aria-hidden="true" />
-            )}
-            {liveEnabled ? 'Live Sync On' : 'Resume Live'}
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-sm"
-            onClick={onLocateMe}
-            aria-label="Locate me using browser geolocation"
-          >
-            <LocateFixed size={14} aria-hidden="true" />
-            Locate me
-          </button>
-
-          <button
-            type="button"
-            className={`icon-circle-btn ${isFavorite ? 'is-fav' : ''}`}
-            onClick={onToggleFavorite}
-            aria-pressed={isFavorite}
-            aria-label={
-              isFavorite
-                ? `Remove ${location.name} from saved cities`
-                : `Save ${location.name} to favorites`
-            }
-            title={isFavorite ? 'Saved city' : 'Save city'}
-          >
-            <Heart size={16} aria-hidden="true" fill={isFavorite ? 'currentColor' : 'none'} />
-          </button>
-
-          <button
-            type="button"
-            className="icon-circle-btn"
-            onClick={handleShareSnapshot}
-            aria-label="Copy live air quality snapshot to clipboard"
-            title={sharedCopied ? 'Copied!' : 'Copy live AQI snapshot'}
-          >
-            {sharedCopied ? (
-              <Check size={16} aria-hidden="true" />
-            ) : (
-              <Share2 size={16} aria-hidden="true" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            className="icon-circle-btn"
-            onClick={onRefresh}
-            disabled={loading}
-            aria-label="Refresh live air quality now"
-            title="Refresh now"
-          >
-            <RefreshCw size={16} aria-hidden="true" className={loading ? 'spin-icon' : ''} />
-          </button>
-        </div>
-      </div>
+      <LiveStatusHeader
+        report={report}
+        loading={loading}
+        liveEnabled={liveEnabled}
+        secondsSinceSync={secondsSinceSync}
+        isFavorite={isFavorite}
+        onToggleLive={onToggleLive}
+        onRefresh={onRefresh}
+        onLocateMe={onLocateMe}
+        onToggleFavorite={onToggleFavorite}
+      />
 
       <div className="showcase-grid">
         <AtmosphericHeroBanner report={report} />
@@ -186,30 +82,12 @@ export function AirQualityOverview({
           role="list"
           aria-label="Detailed pollutant concentrations"
         >
-          <div className="metric-tile" role="listitem">
-            <div className="metric-label">PM2.5 Fine</div>
-            <div className="metric-value">{current.pm25} µg/m³</div>
-          </div>
-          <div className="metric-tile" role="listitem">
-            <div className="metric-label">PM10 Coarse</div>
-            <div className="metric-value">{current.pm10} µg/m³</div>
-          </div>
-          <div className="metric-tile" role="listitem">
-            <div className="metric-label">NO₂ Traffic</div>
-            <div className="metric-value">{current.no2} µg/m³</div>
-          </div>
-          <div className="metric-tile" role="listitem">
-            <div className="metric-label">Ozone (O₃)</div>
-            <div className="metric-value">{current.ozone} µg/m³</div>
-          </div>
-          <div className="metric-tile" role="listitem">
-            <div className="metric-label">CO</div>
-            <div className="metric-value">{current.co} µg/m³</div>
-          </div>
-          <div className="metric-tile" role="listitem">
-            <div className="metric-label">Outdoor Parity</div>
-            <div className="metric-value">~{current.cigaretteEquivalentPerDay} cig/day</div>
-          </div>
+          {pollutantTiles.map((tile) => (
+            <div key={tile.label} className="metric-tile" role="listitem">
+              <div className="metric-label">{tile.label}</div>
+              <div className="metric-value">{tile.value}</div>
+            </div>
+          ))}
         </div>
 
         <div className="callout-row">

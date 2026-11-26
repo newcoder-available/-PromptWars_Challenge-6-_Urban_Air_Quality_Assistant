@@ -3,6 +3,7 @@ import { Calculator, Leaf, Shield, Trees, Users } from 'lucide-react';
 import { PLEDGE_ACTIONS } from '../../shared/constants.js';
 import type { ImpactSimulationResult } from '../../shared/types.js';
 import { simulateImpactApi } from '../lib/apiClient.js';
+import { PledgeActionCard } from './PledgeActionCard.js';
 
 interface ImpactSimulatorProps {
   baselinePm25: number;
@@ -17,6 +18,10 @@ const DEFAULT_SELECTED = [
   'zero-burn-anti-idling',
 ];
 
+/**
+ * Interactive simulator quantifying household PM2.5 inhalation reduction and
+ * community-scale CO₂/PM2.5 abatement across 1 to 1,000 participating households.
+ */
 export function ImpactSimulator({
   baselinePm25,
   householdSize,
@@ -155,39 +160,14 @@ export function ImpactSimulator({
       </h3>
 
       <div className="grid-2">
-        {PLEDGE_ACTIONS.map((action) => {
-          const checked = selectedIds.includes(action.id);
-          const checkboxId = `pledge-${action.id}`;
-          return (
-            <div key={action.id} className="pledge-card" data-selected={checked}>
-              <input
-                id={checkboxId}
-                type="checkbox"
-                className="pledge-checkbox"
-                checked={checked}
-                onChange={() => toggleAction(action.id)}
-              />
-              <div>
-                <label htmlFor={checkboxId} className="pledge-title">
-                  {action.title}
-                </label>
-                <p className="pledge-desc">{action.description}</p>
-                <div className="tag-row tag-row-tight">
-                  <span className="tag tag-brand">
-                    -{action.pm25ExposureReductionPct}% PM2.5 exposure
-                  </span>
-                  {action.monthlyCo2SavedKg > 0 && (
-                    <span className="tag">-{action.monthlyCo2SavedKg} kg CO₂/mo</span>
-                  )}
-                  <span className="tag">-{action.monthlyPm25AvoidedGrams} g PM2.5/mo</span>
-                </div>
-                <p className="pledge-why">
-                  <strong>Why it works:</strong> {action.whyItWorks}
-                </p>
-              </div>
-            </div>
-          );
-        })}
+        {PLEDGE_ACTIONS.map((action) => (
+          <PledgeActionCard
+            key={action.id}
+            action={action}
+            checked={selectedIds.includes(action.id)}
+            onToggle={toggleAction}
+          />
+        ))}
       </div>
     </section>
   );

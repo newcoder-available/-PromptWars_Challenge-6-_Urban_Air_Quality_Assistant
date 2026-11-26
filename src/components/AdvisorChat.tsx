@@ -1,26 +1,13 @@
 import { useRef, useState } from 'react';
-import { MessageSquare, Send, ShieldAlert, Sparkles } from 'lucide-react';
-import type {
-  ChatResponse,
-  ChatTurn,
-  CityLocation,
-  HouseholdProfile,
-} from '../../shared/types.js';
+import { MessageSquare, Send, ShieldAlert } from 'lucide-react';
+import type { ChatTurn, CityLocation, HouseholdProfile } from '../../shared/types.js';
 import { sendAdvisorChatApi } from '../lib/apiClient.js';
+import { ChatMessageBubble, type RichChatMessage } from './ChatMessageBubble.js';
 
 interface AdvisorChatProps {
   location: CityLocation;
   profile: HouseholdProfile;
   currentAqi?: number;
-}
-
-interface RichMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  keyTakeaways?: string[];
-  impactHighlight?: string;
-  engine?: ChatResponse['engine'];
 }
 
 const QUICK_PROMPTS = [
@@ -30,8 +17,12 @@ const QUICK_PROMPTS = [
   'Draft a short winter smog alert & carpool message for my apartment WhatsApp group.',
 ] as const;
 
+/**
+ * Context-aware GenAI advisor chat grounded in live city AQI and household profile,
+ * with quick-prompt chips, structured takeaways, and impact highlights.
+ */
 export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps) {
-  const [messages, setMessages] = useState<RichMessage[]>([
+  const [messages, setMessages] = useState<RichChatMessage[]>([
     {
       id: 'welcome',
       role: 'assistant',
@@ -48,7 +39,7 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
     if (trimmed.length < 2 || sending) return;
 
     nextIdRef.current += 1;
-    const userMsg: RichMessage = {
+    const userMsg: RichChatMessage = {
       id: `user-${nextIdRef.current}`,
       role: 'user',
       content: trimmed,
@@ -73,15 +64,17 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
       });
 
       nextIdRef.current += 1;
-      const assistantMsg: RichMessage = {
-        id: `ai-${nextIdRef.current}`,
-        role: 'assistant',
-        content: response.reply,
-        keyTakeaways: response.keyTakeaways,
-        impactHighlight: response.impactHighlight,
-        engine: response.engine,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-${nextIdRef.current}`,
+          role: 'assistant',
+          content: response.reply,
+          keyTakeaways: response.keyTakeaways,
+          impactHighlight: response.impactHighlight,
+          engine: response.engine,
+        },
+      ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to get response');
     } finally {
@@ -116,7 +109,9 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
             type="button"
             className="chip"
             disabled={sending}
-            onClick={() => submitQuestion(prompt)}
+            onClick={() => {
+              void submitQuestion(prompt);
+            }}
           >
             {prompt}
           </button>
@@ -131,24 +126,7 @@ export function AdvisorChat({ location, profile, currentAqi }: AdvisorChatProps)
         aria-label="Conversation with AirShield AI"
       >
         {messages.map((msg) => (
-          <div key={msg.id} className={`chat-bubble ${msg.role}`}>
-            <div className="chat-text-pre">{msg.content}</div>
-
-            {msg.keyTakeaways && msg.keyTakeaways.length > 0 && (
-              <ul className="chat-takeaways">
-                {msg.keyTakeaways.map((tip) => (
-                  <li key={tip}>{tip}</li>
-                ))}
-              </ul>
-            )}
-
-            {msg.impactHighlight && (
-              <div className="chat-impact-badge">
-                <Sparkles size={13} aria-hidden="true" className="inline-icon-mid" /> Direct
-                Impact: {msg.impactHighlight}
-              </div>
-            )}
-          </div>
+          <ChatMessageBubble key={msg.id} message={msg} />
         ))}
 
         {sending && (
