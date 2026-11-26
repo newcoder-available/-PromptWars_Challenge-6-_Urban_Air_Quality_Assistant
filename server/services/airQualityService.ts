@@ -1,10 +1,12 @@
-import { classifyAqi, PRESET_CITIES } from '../../shared/constants.js';
+import { AIR_QUALITY_CONSTANTS, classifyAqi, PRESET_CITIES } from '../../shared/constants.js';
 import type {
   AirQualityReport,
   CityLocation,
   HourlyAirPoint,
   WeatherConditions,
 } from '../../shared/types.js';
+import { CACHE_CONFIG, NETWORK_LIMITS, UPSTREAM_ORIGINS } from '../config/constants.js';
+import { getServerConfig } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import {
   assessInversionRisk,
@@ -22,7 +24,6 @@ import {
 import { TtlLruCache } from './cacheService.js';
 import { pm25ToCigaretteEquivalentPerDay } from './impactCalculator.js';
 
-// Re-export pure analytics & fallback helpers for consumers and tests
 export {
   assessInversionRisk,
   buildFallbackAirQualityReport,
@@ -32,14 +33,17 @@ export {
   pm25ToUsAqi,
 };
 
-// Hardcoded trusted upstream origins (prevents SSRF)
-const OPEN_METEO_GEO_ORIGIN = 'https://geocoding-api.open-meteo.com/v1/search';
-const OPEN_METEO_AQ_ORIGIN = 'https://air-quality-api.open-meteo.com/v1/air-quality';
-const OPEN_METEO_WEATHER_ORIGIN = 'https://api.open-meteo.com/v1/forecast';
-const UPSTREAM_TIMEOUT_MS = 4500;
+/** Bounded cache storing air quality reports keyed by ~1.1 km rounded coordinates. */
+export const airQualityCache = new TtlLruCache<AirQualityReport>(
+  CACHE_CONFIG.airQuality.maxEntries,
+  CACHE_CONFIG.airQuality.ttlMs,
+);
 
-export const airQualityCache = new TtlLruCache<AirQualityReport>(120, 2 * 60 * 1000);
-export const citySearchCache = new TtlLruCache<CityLocation[]>(150, 30 * 60 * 1000);
+/** Bounded cache storing city geocoding results. */
+export const citySearchCache = new TtlLruCache<CityLocation[]>(
+  CACHE_CONFIG.citySearch.maxEntries,
+  CACHE_CONFIG.citySearch.ttlMs,
+);
 
 interface OpenMeteoGeoResponse {
   results?: Array<{
@@ -87,7 +91,7 @@ interface OpenMeteoWeatherResponse {
 
 async function fetchJsonWithTimeout<T>(url: URL): Promise<T> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), NETWORK_LIMITS.upstreamTimeoutMs);
   try {
     const response = await fetch(url, {
       method: 'GET',
@@ -101,6 +105,32 @@ async function fetchJsonWithTimeout<T>(url: URL): Promise<T> {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function buildOpenMeteoUrls(location: CityLocation): { aqUrl: URL; weatherUrl: URL } {
+  const aqUrl = new URL(UPSTREAM_ORIGINS.openMeteoAirQuality);
+  aqUrl.searchParams.set('latitude', String(location.latitude));
+  aqUrl.searchParams.set('longitude', String(location.longitude));
+  aqUrl.searchParams.set(
+    'current',
+    'us_aqi,pm2_5,pm10,nitrogen_dioxide,ozone,carbon_monoxide,sulphur_dioxide',
+  );
+  aqUrl.searchParams.set('hourly', 'us_aqi,pm2_5,pm10,nitrogen_dioxide,ozone');
+  aqUrl.searchParams.set('forecast_days', '2');
+  aqUrl.searchParams.set('timezone', 'auto');
+
+  const weatherUrl = new URL(UPSTREAM_ORIGINS.openMeteoWeather);
+  weatherUrl.searchParams.set('latitude', String(location.latitude));
+  weatherUrl.searchParams.set('longitude', String(location.longitude));
+  weatherUrl.searchParams.set(
+    'current',
+    'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code',
+  );
+  weatherUrl.searchParams.set('hourly', 'uv_index');
+  weatherUrl.searchParams.set('forecast_days', '1');
+  weatherUrl.searchParams.set('timezone', 'auto');
+
+  return { aqUrl, weatherUrl };
 }
 
 function buildHourlyForecast(data: OpenMeteoAirResponse): HourlyAirPoint[] {
@@ -153,6 +183,49 @@ function buildLiveWeather(
   };
 }
 
+function mapLiveReport(
+  location: CityLocation,
+  data: OpenMeteoAirResponse,
+  weatherData: OpenMeteoWeatherResponse | null,
+  hourlyForecast: HourlyAirPoint[],
+): AirQualityReport {
+  const currentPm25 = Number((data.current?.pm2_5 ?? hourlyForecast[0]?.pm25 ?? 25).toFixed(1));
+  const currentAqi = Math.round(data.current?.us_aqi ?? pm25ToUsAqi(currentPm25));
+  const band = classifyAqi(currentAqi);
+  const weather = buildLiveWeather(location, currentAqi, weatherData);
+
+  return {
+    location: { ...location, timezone: data.timezone ?? location.timezone },
+    fetchedAt: new Date().toISOString(),
+    source: 'open-meteo-live',
+    current: {
+      usAqi: currentAqi,
+      pm25: currentPm25,
+      pm10: Number((data.current?.pm10 ?? currentPm25 * 1.4).toFixed(1)),
+      no2: Number((data.current?.nitrogen_dioxide ?? 18).toFixed(1)),
+      ozone: Number((data.current?.ozone ?? 35).toFixed(1)),
+      co: Math.round(data.current?.carbon_monoxide ?? 350),
+      so2: Number((data.current?.sulphur_dioxide ?? 8).toFixed(1)),
+      severity: band.severity,
+      label: band.label,
+      cigaretteEquivalentPerDay: pm25ToCigaretteEquivalentPerDay(currentPm25),
+      whoPm25Multiple: Number(
+        (currentPm25 / AIR_QUALITY_CONSTANTS.whoPm25Guideline24h).toFixed(1),
+      ),
+    },
+    weather,
+    nearbyStations: buildNearbyStations(location.name, currentPm25),
+    globalRankEstimate: estimateGlobalRank(location.name, currentAqi, weather.windSpeedKmh),
+    hourlyForecast,
+    safestWindow: computeSafestOutdoorWindow(hourlyForecast),
+    inversionRisk: assessInversionRisk(currentAqi, hourlyForecast),
+  };
+}
+
+/**
+ * Searches matching global cities via Open-Meteo Geocoding with bounded caching
+ * and automatic fallback to curated preset hotspots when offline.
+ */
 export async function searchCities(query: string): Promise<CityLocation[]> {
   const normalized = query.trim().toLowerCase();
   const { value } = await citySearchCache.getOrLoad(normalized, async () => {
@@ -162,12 +235,12 @@ export async function searchCities(query: string): Promise<CityLocation[]> {
         c.country.toLowerCase().includes(normalized),
     );
 
-    if (process.env.OFFLINE_MODE === 'true') {
+    if (getServerConfig().offlineMode) {
       return presetMatches;
     }
 
     try {
-      const url = new URL(OPEN_METEO_GEO_ORIGIN);
+      const url = new URL(UPSTREAM_ORIGINS.openMeteoGeo);
       url.searchParams.set('name', query.trim());
       url.searchParams.set('count', '6');
       url.searchParams.set('language', 'en');
@@ -182,7 +255,6 @@ export async function searchCities(query: string): Promise<CityLocation[]> {
         longitude: Number(item.longitude.toFixed(4)),
         timezone: item.timezone,
       }));
-
       return remote.length > 0 ? remote : presetMatches;
     } catch (err) {
       logger.warn('Open-Meteo city search unavailable; using preset matches', {
@@ -195,38 +267,20 @@ export async function searchCities(query: string): Promise<CityLocation[]> {
   return value;
 }
 
+/**
+ * Fetches a comprehensive air quality & winter smog dispersion report for `location`,
+ * combining Open-Meteo AQ + Weather APIs with coordinate-grid caching and offline fallback.
+ */
 export async function getAirQualityReport(location: CityLocation): Promise<AirQualityReport> {
-  // Round coordinates to 2 decimals (~1.1 km grid) to maximize cache hit ratio
   const cacheKey = `${location.latitude.toFixed(2)},${location.longitude.toFixed(2)}`;
 
   const { value, hit } = await airQualityCache.getOrLoad(cacheKey, async () => {
-    if (process.env.OFFLINE_MODE === 'true') {
+    if (getServerConfig().offlineMode) {
       return buildFallbackAirQualityReport(location);
     }
 
     try {
-      const aqUrl = new URL(OPEN_METEO_AQ_ORIGIN);
-      aqUrl.searchParams.set('latitude', String(location.latitude));
-      aqUrl.searchParams.set('longitude', String(location.longitude));
-      aqUrl.searchParams.set(
-        'current',
-        'us_aqi,pm2_5,pm10,nitrogen_dioxide,ozone,carbon_monoxide,sulphur_dioxide',
-      );
-      aqUrl.searchParams.set('hourly', 'us_aqi,pm2_5,pm10,nitrogen_dioxide,ozone');
-      aqUrl.searchParams.set('forecast_days', '2');
-      aqUrl.searchParams.set('timezone', 'auto');
-
-      const weatherUrl = new URL(OPEN_METEO_WEATHER_ORIGIN);
-      weatherUrl.searchParams.set('latitude', String(location.latitude));
-      weatherUrl.searchParams.set('longitude', String(location.longitude));
-      weatherUrl.searchParams.set(
-        'current',
-        'temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code',
-      );
-      weatherUrl.searchParams.set('hourly', 'uv_index');
-      weatherUrl.searchParams.set('forecast_days', '1');
-      weatherUrl.searchParams.set('timezone', 'auto');
-
+      const { aqUrl, weatherUrl } = buildOpenMeteoUrls(location);
       const [data, weatherData] = await Promise.all([
         fetchJsonWithTimeout<OpenMeteoAirResponse>(aqUrl),
         fetchJsonWithTimeout<OpenMeteoWeatherResponse>(weatherUrl).catch(() => null),
@@ -237,38 +291,7 @@ export async function getAirQualityReport(location: CityLocation): Promise<AirQu
         return buildFallbackAirQualityReport(location);
       }
 
-      const currentPm25 = Number((data.current.pm2_5 ?? hourlyForecast[0]?.pm25 ?? 25).toFixed(1));
-      const currentAqi = Math.round(data.current.us_aqi ?? pm25ToUsAqi(currentPm25));
-      const band = classifyAqi(currentAqi);
-      const weather = buildLiveWeather(location, currentAqi, weatherData);
-
-      return {
-        location: {
-          ...location,
-          timezone: data.timezone ?? location.timezone,
-        },
-        fetchedAt: new Date().toISOString(),
-        source: 'open-meteo-live',
-        current: {
-          usAqi: currentAqi,
-          pm25: currentPm25,
-          pm10: Number((data.current.pm10 ?? currentPm25 * 1.4).toFixed(1)),
-          no2: Number((data.current.nitrogen_dioxide ?? 18).toFixed(1)),
-          ozone: Number((data.current.ozone ?? 35).toFixed(1)),
-          co: Math.round(data.current.carbon_monoxide ?? 350),
-          so2: Number((data.current.sulphur_dioxide ?? 8).toFixed(1)),
-          severity: band.severity,
-          label: band.label,
-          cigaretteEquivalentPerDay: pm25ToCigaretteEquivalentPerDay(currentPm25),
-          whoPm25Multiple: Number((currentPm25 / 15).toFixed(1)),
-        },
-        weather,
-        nearbyStations: buildNearbyStations(location.name, currentPm25),
-        globalRankEstimate: estimateGlobalRank(location.name, currentAqi, weather.windSpeedKmh),
-        hourlyForecast,
-        safestWindow: computeSafestOutdoorWindow(hourlyForecast),
-        inversionRisk: assessInversionRisk(currentAqi, hourlyForecast),
-      };
+      return mapLiveReport(location, data, weatherData, hourlyForecast);
     } catch (err) {
       logger.warn('Open-Meteo air quality fetch failed; serving fallback report', {
         city: location.name,

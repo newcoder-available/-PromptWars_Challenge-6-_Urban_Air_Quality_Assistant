@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { RATE_LIMIT_DEFAULTS } from '../config/constants.js';
 
 interface RateBucket {
   timestamps: number[];
@@ -17,7 +18,7 @@ export interface RateLimiterOptions {
  */
 export function createRateLimiter(options: RateLimiterOptions) {
   const buckets = new Map<string, RateBucket>();
-  const maxClients = options.maxTrackedClients ?? 2000;
+  const maxClients = options.maxTrackedClients ?? RATE_LIMIT_DEFAULTS.maxTrackedClients;
 
   return function rateLimiterMiddleware(
     req: Request,

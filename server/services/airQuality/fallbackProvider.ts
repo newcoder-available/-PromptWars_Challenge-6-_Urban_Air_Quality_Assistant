@@ -89,6 +89,9 @@ export function buildNearbyStations(
   });
 }
 
+/**
+ * Generates deterministic winter weather conditions anchored to city climate and AQI.
+ */
 export function buildFallbackWeather(
   location: CityLocation,
   currentAqi: number,

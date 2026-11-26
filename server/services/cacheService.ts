@@ -15,6 +15,9 @@ export interface CacheStats {
   coalesced: number;
 }
 
+/**
+ * Bounded LRU + TTL cache with in-flight request deduplication (coalescing).
+ */
 export class TtlLruCache<T> {
   private readonly store = new Map<string, CacheEntry<T>>();
   private readonly inflight = new Map<string, Promise<T>>();
