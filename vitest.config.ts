@@ -8,5 +8,17 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.test.{ts,tsx}'],
     setupFiles: ['./tests/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary'],
+      include: ['shared/**/*.ts', 'server/**/*.ts', 'src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/main.tsx',
+        'server/index.ts',
+        'shared/types.ts',
+        'server/ai/llmClient.ts',
+        'server/ai/schemas.ts',
+      ],
+    },
   },
 });

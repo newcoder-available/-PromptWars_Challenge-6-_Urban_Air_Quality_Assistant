@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_HOUSEHOLD_PROFILE, PRESET_CITIES } from '../shared/constants.js';
 import { sanitizePlainText } from '../shared/schemas.js';
 import {
@@ -11,13 +11,16 @@ import {
   assessInversionRisk,
   buildFallbackAirQualityReport,
   computeSafestOutdoorWindow,
+  estimateGlobalRank,
   pm25ToUsAqi,
 } from '../server/services/airQualityService.js';
+import { mapWeatherCondition } from '../server/services/airQuality/aqiAnalytics.js';
 import { TtlLruCache } from '../server/services/cacheService.js';
 import {
   pm25ToCigaretteEquivalentPerDay,
   simulatePledgeImpact,
 } from '../server/services/impactCalculator.js';
+import { logger } from '../server/utils/logger.js';
 
 describe('TtlLruCache (Efficiency, TTL & Coalescing)', () => {
   it('evicts least-recently-used entries when maxEntries is exceeded', () => {
@@ -195,5 +198,64 @@ describe('Local Action Plan & Chat Personalization', () => {
       'Draft a WhatsApp alert for my RWA',
     );
     expect(community.reply).toContain('Smog Alert');
+
+    const general = buildLocalChatResponse(
+      report,
+      { ...DEFAULT_HOUSEHOLD_PROFILE, hasHepaPurifier: true },
+      'What should our family do this evening?',
+    );
+    expect(general.reply).toContain('HEPA purifier');
+  });
+
+  it('covers clean-commute, induction cooking, low-AQI advisories, weather codes, rank tiers, and logger', () => {
+    const cleanCityReport = buildFallbackAirQualityReport({
+      name: 'London',
+      country: 'United Kingdom',
+      latitude: 51.5072,
+      longitude: -0.1276,
+    });
+    const cleanPlan = buildLocalActionPlan(
+      { ...cleanCityReport, current: { ...cleanCityReport.current, usAqi: 42, pm25: 8 } },
+      {
+        ...DEFAULT_HOUSEHOLD_PROFILE,
+        commuteMode: 'public_transit',
+        cookingFuel: 'induction_electric',
+        vulnerableGroups: [],
+      },
+      'Morning park jog',
+    );
+    expect(cleanPlan.recommendations.some((r) => r.id === 'routine-clean-transit-timing')).toBe(true);
+    expect(cleanPlan.recommendations.some((r) => r.id === 'sustainable-low-voc-home')).toBe(true);
+    expect(cleanPlan.urgentAlerts.some((a) => a.includes('Favorable Window'))).toBe(true);
+
+    expect(mapWeatherCondition(61, 45, 18).conditionIcon).toBe('rain');
+    expect(mapWeatherCondition(45, 90, 12).conditionIcon).toBe('fog');
+    expect(mapWeatherCondition(2, 60, 14).conditionIcon).toBe('cloudy');
+    expect(mapWeatherCondition(0, 40, 20).conditionIcon).toBe('clear');
+    expect(estimateGlobalRank('TestCity', 340, 3).rank).toBeLessThan(10);
+    expect(estimateGlobalRank('TestCity', 110, 12).percentileNote).toContain('Light breeze');
+    expect(estimateGlobalRank('TestCity', 40, 22).percentileNote).toContain('Brisk wind');
+
+    const prevVitest = process.env.VITEST;
+    const prevEnv = process.env.NODE_ENV;
+    const infoSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      process.env.VITEST = 'false';
+      process.env.NODE_ENV = 'production';
+      logger.info('boot', { port: 3001 });
+      logger.warn('fallback');
+      logger.error('failure', { code: 500 });
+      expect(infoSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(errSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      process.env.VITEST = prevVitest;
+      process.env.NODE_ENV = prevEnv;
+      infoSpy.mockRestore();
+      warnSpy.mockRestore();
+      errSpy.mockRestore();
+    }
   });
 });

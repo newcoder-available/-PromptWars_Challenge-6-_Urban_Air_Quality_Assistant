@@ -13,6 +13,7 @@
     "start": "node dist/server/server/index.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "lint": "eslint api shared server src tests"
   },
@@ -39,6 +40,7 @@
     "@types/react-dom": "^19.2.2",
     "@types/supertest": "^6.0.3",
     "@vitejs/plugin-react": "^5.1.0",
+    "@vitest/coverage-v8": "^4.1.12",
     "concurrently": "^9.2.1",
     "eslint": "^9.38.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
